@@ -1,0 +1,42 @@
+@import url("https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;700&family=Inter:wght@400;500&family=JetBrains+Mono:wght@400;500&display=swap");
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/*
+  Design tokens — "signal trace" theme.
+  Rationale: the portfolio's signature feature is a RAG chatbot retrieving
+  chunks and tracing a request through a pipeline. The accent color (cyan)
+  and the hero's animated trace line both echo that mechanism directly,
+  instead of a generic dark-mode default.
+*/
+:root {
+  --background: 210 27% 9%;
+  --foreground: 48 26% 91%;
+  --card: 212 27% 12%;
+  --card-foreground: 48 26% 91%;
+  --muted: 213 24% 15%;
+  --muted-foreground: 213 12% 62%;
+  --accent: 174 55% 60%;
+  --accent-foreground: 210 27% 9%;
+  --border: 213 20% 20%;
+  --radius: 0.5rem;
+}
+
+body {
+  background-color: hsl(var(--background));
+  color: hsl(var(--foreground));
+  font-family: "Inter", sans-serif;
+}
+
+.font-display {
+  font-family: "Space Grotesk", sans-serif;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  * {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
