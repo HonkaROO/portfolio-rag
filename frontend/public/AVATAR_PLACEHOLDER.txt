@@ -1,0 +1,5 @@
+Drop your headshot here as `avatar.jpg` (square, ~400x400px works well).
+Until it exists, the About section falls back to a monogram automatically —
+nothing breaks if you deploy without it.
+
+Delete this file once avatar.jpg is added.

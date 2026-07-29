@@ -17,7 +17,7 @@ export default function ChatWidget() {
     {
       role: "assistant",
       content:
-        "Hi, I'm a RAG assistant trained on Christian's resume. Ask me about his experience, projects, or skills.",
+        "Hi, I'm Honka, Christian's trained RAG chatbot trained on Christian's resume. Ask me about his experience, projects, or skills.",
     },
   ]);
   const [input, setInput] = useState("");
@@ -74,13 +74,13 @@ export default function ChatWidget() {
                   }`}
                 >
                   <span className="font-mono text-xs text-accent mr-2">
-                    {m.role === "user" ? "you" : "assistant"}
+                    {m.role === "user" ? "You" : "Honka"}
                   </span>
                   {m.content}
                 </div>
               ))}
               {loading && (
-                <p className="font-mono text-xs text-muted-foreground">assistant is thinking…</p>
+                <p className="font-mono text-xs text-muted-foreground">Honka is thinking…</p>
               )}
               {error && <p className="text-xs text-red-400">{error}</p>}
             </div>
