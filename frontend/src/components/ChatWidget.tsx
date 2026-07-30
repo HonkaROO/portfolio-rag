@@ -1,38 +1,92 @@
-import { useState, useRef, useEffect } from "react";
-import { Button } from "@/components/ui/button";
+import { useState, useRef, useEffect, KeyboardEvent } from "react";
+import ReactMarkdown from "react-markdown";
+import { Send, Sparkles, Code2, Award, X } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
+import { cn } from "@/lib/utils";
 
 const API_URL = import.meta.env.VITE_API_URL || "http://localhost:8000";
 
-type Message = { role: "user" | "assistant"; content: string };
+type Provider = "groq" | "gemini";
+type Message = {
+  role: "user" | "assistant";
+  content: string;
+  provider?: Provider;
+  timestamp: number;
+};
 
 const SUGGESTIONS = [
-  "What's Christian's experience with FastAPI?",
-  "Tell me about the RAG chatbot projects",
-  "What certifications does he hold?",
+  { icon: Code2, text: "What's Christian's experience with FastAPI?" },
+  { icon: Sparkles, text: "Tell me about the RAG chatbot projects" },
+  { icon: Award, text: "What certifications does he hold?" },
 ];
+
+const PROVIDERS: { id: Provider; label: string }[] = [
+  { id: "groq", label: "Groq · Llama 3.1" },
+  { id: "gemini", label: "Gemini · 1.5 Flash" },
+];
+
+function formatTime(ts: number) {
+  return new Date(ts).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
+}
+
+function TypingDots() {
+  return (
+    <div className="flex items-center gap-1 px-2 py-3">
+      {[0, 1, 2].map((i) => (
+        <span
+          key={i}
+          className="h-1.5 w-1.5 rounded-full bg-muted-foreground/60 animate-bounce"
+          style={{ animationDelay: `${i * 0.15}s` }}
+        />
+      ))}
+    </div>
+  );
+}
+
+function HonkaAvatar({ size = "h-9 w-9" }: { size?: string }) {
+  return (
+    <div
+      className={cn(
+        "shrink-0 rounded-full bg-accent/15 border border-accent/30 flex items-center justify-center",
+        size
+      )}
+    >
+      <Sparkles className="h-4 w-4 text-accent" />
+    </div>
+  );
+}
 
 export default function ChatWidget() {
   const [messages, setMessages] = useState<Message[]>([
     {
       role: "assistant",
       content:
-        "Hi, I'm Honka, Christian's RAG assistant trained on his resume. Ask me about his experience, projects, or skills.",
+        "Hi, I'm **Honka** — a RAG assistant trained on Christian's resume. Ask me about his experience, projects, or skills, or try one of the prompts below. You can also switch which model answers.",
+      timestamp: Date.now(),
     },
   ]);
+  const [provider, setProvider] = useState<Provider>("groq");
   const [input, setInput] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const scrollRef = useRef<HTMLDivElement>(null);
+  const inputRef = useRef<HTMLTextAreaElement>(null);
 
   useEffect(() => {
     scrollRef.current?.scrollTo({ top: scrollRef.current.scrollHeight, behavior: "smooth" });
-  }, [messages]);
+  }, [messages, loading]);
+
+  useEffect(() => {
+    inputRef.current?.focus();
+  }, []);
 
   async function send(question: string) {
     if (!question.trim() || loading) return;
     setError(null);
-    const next: Message[] = [...messages, { role: "user", content: question }];
+    const next: Message[] = [
+      ...messages,
+      { role: "user", content: question, timestamp: Date.now() },
+    ];
     setMessages(next);
     setInput("");
     setLoading(true);
@@ -40,18 +94,34 @@ export default function ChatWidget() {
       const res = await fetch(`${API_URL}/chat`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ question }),
+        body: JSON.stringify({ question, provider }),
       });
       if (!res.ok) throw new Error(`Backend returned ${res.status}`);
       const data = await res.json();
-      setMessages([...next, { role: "assistant", content: data.answer }]);
-    } catch (err) {
+      setMessages([
+        ...next,
+        {
+          role: "assistant",
+          content: data.answer,
+          provider: data.provider,
+          timestamp: Date.now(),
+        },
+      ]);
+    } catch {
       setError(
         "Couldn't reach the assistant backend. If you're running this locally, make sure the FastAPI server is up at " +
           API_URL
       );
     } finally {
       setLoading(false);
+      requestAnimationFrame(() => inputRef.current?.focus());
+    }
+  }
+
+  function handleKeyDown(e: KeyboardEvent<HTMLTextAreaElement>) {
+    if (e.key === "Enter" && !e.shiftKey) {
+      e.preventDefault();
+      send(input);
     }
   }
 
@@ -59,60 +129,190 @@ export default function ChatWidget() {
     <section id="chat" className="scroll-anchor border-b border-border">
       <div className="container py-20">
         <h2 className="font-display text-2xl font-bold mb-2">Ask about my experience</h2>
-        <p className="text-sm text-muted-foreground mb-8">
+        <p className="text-sm text-muted-foreground mb-6">
           Retrieval-augmented chat over the resume content on this page.
         </p>
 
-        <Card className="max-w-2xl">
+        <Card className="max-w-4xl mx-auto overflow-hidden">
+          {/* Header */}
+          <div className="flex items-center justify-between px-6 py-4 border-b border-border">
+            <div className="flex items-center gap-3">
+              <div className="relative">
+                <HonkaAvatar />
+                <span className="absolute -bottom-0.5 -right-0.5 h-3 w-3 rounded-full bg-emerald-400 border-2 border-card">
+                  <span className="absolute inset-0 rounded-full bg-emerald-400 animate-ping opacity-75" />
+                </span>
+              </div>
+              <div>
+                <p className="font-display font-medium leading-tight">Meet Honka</p>
+                <p className="text-xs text-muted-foreground">AI assistant · online</p>
+              </div>
+            </div>
+
+            <div className="hidden sm:inline-flex rounded-full border border-border p-1">
+              {PROVIDERS.map((p) => (
+                <button
+                  key={p.id}
+                  onClick={() => setProvider(p.id)}
+                  className={cn(
+                    "font-mono text-xs px-3 py-1.5 rounded-full transition-all duration-200",
+                    provider === p.id
+                      ? "bg-accent text-accent-foreground"
+                      : "text-muted-foreground hover:text-foreground hover:bg-muted"
+                  )}
+                >
+                  {p.label}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          <div className="sm:hidden flex justify-center gap-1 border-b border-border py-2">
+            {PROVIDERS.map((p) => (
+              <button
+                key={p.id}
+                onClick={() => setProvider(p.id)}
+                className={cn(
+                  "font-mono text-[11px] px-3 py-1 rounded-full transition-colors",
+                  provider === p.id ? "bg-accent text-accent-foreground" : "text-muted-foreground"
+                )}
+              >
+                {p.label}
+              </button>
+            ))}
+          </div>
+
           <CardContent className="p-0">
-            <div ref={scrollRef} className="h-80 overflow-y-auto p-6 space-y-4">
+            <div ref={scrollRef} className="h-[28rem] overflow-y-auto px-6 py-6 space-y-5">
               {messages.map((m, i) => (
                 <div
                   key={i}
-                  className={`text-sm leading-relaxed ${
-                    m.role === "user" ? "text-foreground" : "text-muted-foreground"
-                  }`}
+                  className={cn(
+                    "flex gap-3 items-end",
+                    m.role === "user" ? "flex-row-reverse" : "flex-row"
+                  )}
                 >
-                  <span className="font-mono text-xs text-accent mr-2">
-                    {m.role === "user" ? "You" : "Honka"}
-                  </span>
-                  {m.content}
+                  {m.role === "assistant" && <HonkaAvatar size="h-7 w-7" />}
+                  <div
+                    className={cn(
+                      "max-w-[75%] flex flex-col",
+                      m.role === "user" ? "items-end" : "items-start"
+                    )}
+                  >
+                    <div
+                      className={cn(
+                        "rounded-2xl px-4 py-2.5 text-sm leading-relaxed transition-transform hover:-translate-y-0.5",
+                        m.role === "user"
+                          ? "bg-accent text-accent-foreground rounded-br-sm"
+                          : "bg-muted text-foreground rounded-bl-sm"
+                      )}
+                    >
+                      <ReactMarkdown
+                        components={{
+                          p: ({ children }) => <p className="m-0 [&:not(:first-child)]:mt-2">{children}</p>,
+                          strong: ({ children }) => (
+                            <strong className="font-semibold">{children}</strong>
+                          ),
+                          ul: ({ children }) => (
+                            <ul className="list-disc pl-4 my-1 space-y-0.5">{children}</ul>
+                          ),
+                          li: ({ children }) => <li>{children}</li>,
+                          code: ({ children }) => (
+                            <code className="font-mono text-xs bg-background/30 rounded px-1 py-0.5">
+                              {children}
+                            </code>
+                          ),
+                          a: ({ children, href }) => (
+                            <a
+                              href={href}
+                              target="_blank"
+                              rel="noreferrer"
+                              className="underline underline-offset-2"
+                            >
+                              {children}
+                            </a>
+                          ),
+                        }}
+                      >
+                        {m.content}
+                      </ReactMarkdown>
+                    </div>
+                    <div className="flex items-center gap-1.5 mt-1 px-1">
+                      <span className="text-[10px] text-muted-foreground/70">
+                        {formatTime(m.timestamp)}
+                      </span>
+                      {m.provider && (
+                        <span className="text-[10px] font-mono text-muted-foreground/70">
+                          · via {m.provider}
+                        </span>
+                      )}
+                    </div>
+                  </div>
                 </div>
               ))}
+
               {loading && (
-                <p className="font-mono text-xs text-muted-foreground">Honka is thinking…</p>
+                <div className="flex gap-3 items-end">
+                  <HonkaAvatar size="h-7 w-7" />
+                  <div className="bg-muted rounded-2xl rounded-bl-sm">
+                    <TypingDots />
+                  </div>
+                </div>
               )}
-              {error && <p className="text-xs text-red-400">{error}</p>}
+
+              {error && (
+                <div className="flex items-start justify-between gap-3 bg-red-500/10 border border-red-500/30 text-red-400 text-xs rounded-lg px-3 py-2.5">
+                  <span>{error}</span>
+                  <button
+                    onClick={() => setError(null)}
+                    className="shrink-0 hover:opacity-70 transition-opacity"
+                    aria-label="Dismiss error"
+                  >
+                    <X className="h-3.5 w-3.5" />
+                  </button>
+                </div>
+              )}
             </div>
 
-            <div className="border-t border-border p-4 flex flex-wrap gap-2">
-              {SUGGESTIONS.map((s) => (
+            {/* Suggestion chips */}
+            <div className="border-t border-border px-6 py-3 flex flex-wrap gap-2">
+              {SUGGESTIONS.map(({ icon: Icon, text }) => (
                 <button
-                  key={s}
-                  onClick={() => send(s)}
-                  className="font-mono text-xs px-2 py-1 rounded border border-border text-muted-foreground hover:border-accent hover:text-accent transition-colors"
+                  key={text}
+                  onClick={() => send(text)}
+                  className="inline-flex items-center gap-1.5 font-mono text-xs px-3 py-1.5 rounded-full border border-border text-muted-foreground hover:border-accent hover:text-accent hover:-translate-y-0.5 transition-all duration-200"
                 >
-                  {s}
+                  <Icon className="h-3 w-3" />
+                  {text}
                 </button>
               ))}
             </div>
 
+            {/* Input bar */}
             <form
-              className="border-t border-border p-4 flex gap-2"
+              className="border-t border-border px-4 py-3 flex items-end gap-2"
               onSubmit={(e) => {
                 e.preventDefault();
                 send(input);
               }}
             >
-              <input
+              <textarea
+                ref={inputRef}
                 value={input}
                 onChange={(e) => setInput(e.target.value)}
-                placeholder="Ask a question…"
-                className="flex-1 bg-transparent border border-border rounded-md px-3 py-2 text-sm outline-none focus:border-accent"
+                onKeyDown={handleKeyDown}
+                placeholder="Ask a question… (Shift+Enter for a new line)"
+                rows={1}
+                className="flex-1 resize-none bg-transparent border border-border rounded-2xl px-4 py-2.5 text-sm outline-none focus:border-accent transition-colors max-h-32"
               />
-              <Button type="submit" disabled={loading}>
-                Send
-              </Button>
+              <button
+                type="submit"
+                disabled={loading || !input.trim()}
+                className="h-10 w-10 shrink-0 rounded-full bg-accent text-accent-foreground flex items-center justify-center hover:opacity-90 hover:scale-105 active:scale-95 transition-all duration-150 disabled:opacity-40 disabled:hover:scale-100"
+                aria-label="Send message"
+              >
+                <Send className="h-4 w-4" />
+              </button>
             </form>
           </CardContent>
         </Card>
