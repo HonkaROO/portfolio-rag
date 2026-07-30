@@ -17,7 +17,7 @@ export default function ChatWidget() {
     {
       role: "assistant",
       content:
-        "Hi, I'm Honka, Christian's trained RAG chatbot trained on Christian's resume. Ask me about his experience, projects, or skills.",
+        "Hi, I'm Honka, Christian's RAG assistant trained on his resume. Ask me about his experience, projects, or skills.",
     },
   ]);
   const [input, setInput] = useState("");
@@ -56,7 +56,7 @@ export default function ChatWidget() {
   }
 
   return (
-    <section id="chat" className="border-b border-border">
+    <section id="chat" className="scroll-anchor border-b border-border">
       <div className="container py-20">
         <h2 className="font-display text-2xl font-bold mb-2">Ask about my experience</h2>
         <p className="text-sm text-muted-foreground mb-8">

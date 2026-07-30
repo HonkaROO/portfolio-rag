@@ -1,15 +1,17 @@
 import { projects } from "@/data/resume";
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import Reveal from "@/components/Reveal";
 
 export default function Projects() {
   return (
-    <section className="border-b border-border">
+    <section id="projects" className="scroll-anchor border-b border-border">
       <div className="container py-20">
         <h2 className="font-display text-2xl font-bold mb-10">Projects</h2>
         <div className="grid md:grid-cols-2 gap-6">
           {projects.map((p) => (
-            <Card key={p.name}>
+            <Reveal key={p.name}>
+            <Card>
               <CardHeader>
                 <CardTitle>{p.name}</CardTitle>
                 <CardDescription>{p.role}</CardDescription>
@@ -29,6 +31,7 @@ export default function Projects() {
                 </div>
               </CardContent>
             </Card>
+            </Reveal>
           ))}
         </div>
       </div>

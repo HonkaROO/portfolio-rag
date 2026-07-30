@@ -5,6 +5,16 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Christian Paul Gumanit — Software Engineer</title>
     <meta name="description" content="Software Engineer specializing in AI development, RAG systems, and full-stack web applications." />
+    <script>
+      // Applied before paint to avoid a light/dark flash on load.
+      (function () {
+        try {
+          if (localStorage.getItem("theme") === "light") {
+            document.documentElement.classList.add("light");
+          }
+        } catch (e) {}
+      })();
+    </script>
   </head>
   <body>
     <div id="root"></div>

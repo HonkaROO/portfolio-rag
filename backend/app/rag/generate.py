@@ -46,27 +46,14 @@ def _generate_groq(prompt: str) -> str:
 
 
 def _generate_gemini(prompt: str) -> str:
-    url = (
-        f"https://generativelanguage.googleapis.com/v1beta/models/"
-        f"{settings.gemini_model}:generateContent"
-    )
-
     resp = requests.post(
-        url,
+        "https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent",
         params={"key": settings.gemini_api_key},
         json={
-            "systemInstruction": {
-                "parts": [{"text": SYSTEM_PROMPT}]
-            },
-            "contents": [
-                {
-                    "parts": [{"text": prompt}]
-                }
-            ],
+            "systemInstruction": {"parts": [{"text": SYSTEM_PROMPT}]},
+            "contents": [{"parts": [{"text": prompt}]}],
         },
         timeout=30,
     )
-
     resp.raise_for_status()
-
     return resp.json()["candidates"][0]["content"]["parts"][0]["text"].strip()

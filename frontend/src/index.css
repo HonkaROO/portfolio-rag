@@ -23,14 +23,47 @@
   --radius: 0.5rem;
 }
 
+/* Light theme override, toggled by adding class="light" to <html> */
+.light {
+  --background: 200 20% 95%;
+  --foreground: 210 27% 12%;
+  --card: 0 0% 100%;
+  --card-foreground: 210 27% 12%;
+  --muted: 206 20% 90%;
+  --muted-foreground: 206 15% 40%;
+  --accent: 175 84% 30%;
+  --accent-foreground: 200 20% 97%;
+  --border: 206 20% 84%;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
 body {
   background-color: hsl(var(--background));
   color: hsl(var(--foreground));
   font-family: "Inter", sans-serif;
+  transition: background-color 0.2s ease, color 0.2s ease;
 }
 
 .font-display {
   font-family: "Space Grotesk", sans-serif;
+}
+
+.scroll-anchor {
+  scroll-margin-top: 5rem;
+}
+
+.reveal {
+  opacity: 0;
+  transform: translateY(16px);
+  transition: opacity 0.6s ease, transform 0.6s ease;
+}
+
+.reveal.is-visible {
+  opacity: 1;
+  transform: translateY(0);
 }
 
 @media (prefers-reduced-motion: reduce) {

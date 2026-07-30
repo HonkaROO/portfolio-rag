@@ -3,7 +3,7 @@ import { Button } from "@/components/ui/button";
 
 export default function Hero() {
   return (
-    <section className="border-b border-border">
+    <section id="top" className="border-b border-border">
       <div className="container py-24 grid md:grid-cols-[1.3fr_1fr] gap-12 items-center">
         <div>
           <p className="font-mono text-xs text-accent tracking-widest uppercase mb-4">
@@ -17,7 +17,7 @@ export default function Hero() {
           </p>
           <div className="flex gap-3">
             <Button asChild>
-              <a href="#chat">Ask my AI assistant</a>
+              <a href="#chat">Ask Honka!, my AI assistant</a>
             </Button>
             <Button variant="outline" asChild>
               <a href={profile.linkedin} target="_blank" rel="noreferrer">

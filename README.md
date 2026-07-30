@@ -81,6 +81,28 @@ Deploy to **Vercel** (free tier):
 2. Vercel auto-detects Vite; `vercel.json` is included as a fallback.
 3. Add `VITE_API_URL` as an environment variable pointing to your Render backend.
 
+## New in this pass
+
+- **Navbar** — sticky, smooth-scrolls to each section, includes theme toggle + resume download, collapses to a mobile menu.
+- **About section** — bio + your degree/location. Drop a real photo at `frontend/public/avatar.jpg` (400x400px works well); until then it shows a monogram automatically, so nothing breaks.
+- **Dark/light theme toggle** — persists via `localStorage`, no flash on reload (handled in `index.html`).
+- **Scroll-reveal animations** — sections fade/slide in via `components/Reveal.tsx` + `hooks/useReveal.ts`; respects `prefers-reduced-motion`.
+- **Downloadable resume PDF** — `frontend/public/resume.pdf` is your real resume file, served as-is at `/resume.pdf`. To update it later, just replace that file with your latest export (keep the filename, or update the two `href="/resume.pdf"` links in `Navbar.tsx` if you rename it) — no rebuild step needed for the PDF itself.
+- **Contact form** — posts to Formspree (free, no backend needed). Sign up at formspree.io, create a form, and set `VITE_FORMSPREE_ID` in `frontend/.env` to its ID.
+
+## Recommended deploy: frontend-only on Vercel, backend on Render
+
+For this project, splitting frontend and backend across Vercel + Render is the
+simplest path: the RAG backend needs `sentence-transformers` for free local
+embeddings, which is too large for Vercel's serverless function limits. Vercel
+serves the React app; Render (free tier) runs the FastAPI + embedding model
+continuously. Both are still $0. See the Backend/Frontend sections above for
+each platform's steps.
+
+If you'd rather run everything on Vercel later, the trade-off is swapping the
+local embedding model for an API-based one (e.g. Gemini's embedding endpoint)
+so the function stays small — happy to do that migration when you're ready.
+
 ## Updating your content
 
 Edit `frontend/src/data/resume.ts` for what's displayed on the page, and

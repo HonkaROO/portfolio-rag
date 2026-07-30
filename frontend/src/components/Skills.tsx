@@ -3,7 +3,7 @@ import { Badge } from "@/components/ui/badge";
 
 export default function Skills() {
   return (
-    <section className="border-b border-border">
+    <section id="skills" className="scroll-anchor border-b border-border">
       <div className="container py-20 grid md:grid-cols-2 gap-12">
         <div>
           <h2 className="font-display text-2xl font-bold mb-8">Skills</h2>
