@@ -1,18 +1,25 @@
-from pydantic_settings import BaseSettings
+from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
 class Settings(BaseSettings):
+    model_config = SettingsConfigDict(
+        env_file=".env",
+        extra="ignore",
+    )
+
     supabase_url: str
-    supabase_key: str  # use the service_role key for ingest, anon key is fine for read-only chat
+    supabase_key: str
+
+    llm_model: str = "llama-3.1-8b-instant"
+
     groq_api_key: str = ""
     gemini_api_key: str = ""
-    llm_provider: str = "groq"  # "groq" or "gemini"
+    azure_api_key: str = ""
+
     allowed_origins: str = "http://localhost:5173"
+
     embedding_model: str = "all-MiniLM-L6-v2"
     match_count: int = 4
-
-    class Config:
-        env_file = ".env"
 
 
 settings = Settings()

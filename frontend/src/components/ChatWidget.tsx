@@ -1,28 +1,37 @@
 import { useState, useRef, useEffect, KeyboardEvent } from "react";
 import ReactMarkdown from "react-markdown";
-import { Send, Sparkles, Code2, Award, X } from "lucide-react";
+import { Send, Sparkles, Code2, Award, X, Zap, ChevronDown, Check } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
 
 const API_URL = import.meta.env.VITE_API_URL || "http://localhost:8000";
 
-type Provider = "groq" | "gemini";
-type Message = {
+// Add more entries here as you integrate more providers - the dropdown and
+// backend request both key off this list, no other frontend change needed.
+const MODELS = [
+  { id: "groq", label: "Groq · Llama-3.1-8B-Instant" },
+  { id: "gemini", label: "Gemini · 3.1 Flash-Lite" },
+  { id: "azure", label: "Azure OpenAI · GPT-5-Nano" },
+] as const;
+
+type Provider = (typeof MODELS)[number]["id"];
+const MODEL_LABEL: Record<Provider, string> = Object.fromEntries(
+  MODELS.map((m) => [m.id, m.label])
+) as Record<Provider, string>;
+
+type ChatMessage = {
   role: "user" | "assistant";
   content: string;
   provider?: Provider;
   timestamp: number;
 };
+type SystemMessage = { role: "system"; content: string; timestamp: number };
+type Message = ChatMessage | SystemMessage;
 
 const SUGGESTIONS = [
   { icon: Code2, text: "What's Christian's experience with FastAPI?" },
   { icon: Sparkles, text: "Tell me about the RAG chatbot projects" },
   { icon: Award, text: "What certifications does he hold?" },
-];
-
-const PROVIDERS: { id: Provider; label: string }[] = [
-  { id: "groq", label: "Groq · Llama 3.1" },
-  { id: "gemini", label: "Gemini · 1.5 Flash" },
 ];
 
 function formatTime(ts: number) {
@@ -56,12 +65,78 @@ function HonkaAvatar({ size = "h-9 w-9" }: { size?: string }) {
   );
 }
 
+function ModelDropdown({
+  value,
+  onChange,
+}: {
+  value: Provider;
+  onChange: (p: Provider) => void;
+}) {
+  const [open, setOpen] = useState(false);
+  const ref = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    function handleClickOutside(e: MouseEvent) {
+      if (ref.current && !ref.current.contains(e.target as Node)) setOpen(false);
+    }
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
+
+  return (
+    <div ref={ref} className="relative">
+      <button
+        type="button"
+        onClick={() => setOpen((o) => !o)}
+        className="inline-flex items-center gap-2 font-mono text-xs px-3 py-1.5 rounded-full border border-border bg-muted/40 hover:border-accent transition-colors"
+      >
+        <span className="h-1.5 w-1.5 rounded-full bg-accent shrink-0" />
+        <span className="max-w-[9rem] truncate">{MODEL_LABEL[value]}</span>
+        <ChevronDown className={cn("h-3 w-3 shrink-0 transition-transform", open && "rotate-180")} />
+      </button>
+
+      {open && (
+        <div className="absolute right-0 mt-2 w-60 rounded-xl border border-border bg-card shadow-lg overflow-hidden z-20">
+          {MODELS.map((m) => (
+            <button
+              key={m.id}
+              type="button"
+              onClick={() => {
+                onChange(m.id);
+                setOpen(false);
+              }}
+              className={cn(
+                "w-full flex items-center justify-between gap-2 px-3 py-2.5 text-xs font-mono text-left transition-colors hover:bg-muted",
+                m.id === value ? "text-accent" : "text-foreground"
+              )}
+            >
+              {m.label}
+              {m.id === value && <Check className="h-3 w-3 shrink-0" />}
+            </button>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
+
+function SystemNotice({ content }: { content: string }) {
+  return (
+    <div className="flex justify-center">
+      <span className="inline-flex items-center gap-1.5 text-[11px] font-mono text-muted-foreground bg-muted/50 border border-border rounded-full px-3 py-1">
+        <Zap className="h-3 w-3 text-accent" />
+        {content}
+      </span>
+    </div>
+  );
+}
+
 export default function ChatWidget() {
   const [messages, setMessages] = useState<Message[]>([
     {
       role: "assistant",
       content:
-        "Hi, I'm **Honka** — a RAG assistant trained on Christian's resume. Ask me about his experience, projects, or skills, or try one of the prompts below. You can also switch which model answers.",
+        "Hi, I'm **Honka** — a RAG assistant trained on Christian's resume. Ask me about his experience, projects, or skills, or try one of the prompts below. You can also switch which model answers from the dropdown above.",
       timestamp: Date.now(),
     },
   ]);
@@ -69,6 +144,7 @@ export default function ChatWidget() {
   const [input, setInput] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
   const scrollRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLTextAreaElement>(null);
 
@@ -80,9 +156,19 @@ export default function ChatWidget() {
     inputRef.current?.focus();
   }, []);
 
+  function handleModelChange(next: Provider) {
+    if (next === provider) return;
+    setProvider(next);
+    setMessages((prev) => [
+      ...prev,
+      { role: "system", content: `Switched to ${MODEL_LABEL[next]}`, timestamp: Date.now() },
+    ]);
+  }
+
   async function send(question: string) {
     if (!question.trim() || loading) return;
     setError(null);
+    const requestedProvider = provider;
     const next: Message[] = [
       ...messages,
       { role: "user", content: question, timestamp: Date.now() },
@@ -94,19 +180,28 @@ export default function ChatWidget() {
       const res = await fetch(`${API_URL}/chat`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ question, provider }),
+        body: JSON.stringify({ question, provider: requestedProvider }),
       });
       if (!res.ok) throw new Error(`Backend returned ${res.status}`);
       const data = await res.json();
-      setMessages([
-        ...next,
-        {
-          role: "assistant",
-          content: data.answer,
-          provider: data.provider,
+      const usedProvider = data.provider as Provider;
+
+      const inserts: Message[] = [];
+      if (usedProvider && usedProvider !== requestedProvider) {
+        inserts.push({
+          role: "system",
+          content: `Auto-switched to ${MODEL_LABEL[usedProvider]} — ${MODEL_LABEL[requestedProvider]} was unavailable`,
           timestamp: Date.now(),
-        },
-      ]);
+        });
+      }
+      inserts.push({
+        role: "assistant",
+        content: data.answer,
+        provider: usedProvider,
+        timestamp: Date.now(),
+      });
+
+      setMessages([...next, ...inserts]);
     } catch {
       setError(
         "Couldn't reach the assistant backend. If you're running this locally, make sure the FastAPI server is up at " +
@@ -135,121 +230,98 @@ export default function ChatWidget() {
 
         <Card className="max-w-4xl mx-auto overflow-hidden">
           {/* Header */}
-          <div className="flex items-center justify-between px-6 py-4 border-b border-border">
-            <div className="flex items-center gap-3">
-              <div className="relative">
+          <div className="flex items-center justify-between gap-3 px-6 py-4 border-b border-border">
+            <div className="flex items-center gap-3 min-w-0">
+              <div className="relative shrink-0">
                 <HonkaAvatar />
                 <span className="absolute -bottom-0.5 -right-0.5 h-3 w-3 rounded-full bg-emerald-400 border-2 border-card">
                   <span className="absolute inset-0 rounded-full bg-emerald-400 animate-ping opacity-75" />
                 </span>
               </div>
-              <div>
+              <div className="min-w-0">
                 <p className="font-display font-medium leading-tight">Meet Honka</p>
                 <p className="text-xs text-muted-foreground">AI assistant · online</p>
               </div>
             </div>
 
-            <div className="hidden sm:inline-flex rounded-full border border-border p-1">
-              {PROVIDERS.map((p) => (
-                <button
-                  key={p.id}
-                  onClick={() => setProvider(p.id)}
-                  className={cn(
-                    "font-mono text-xs px-3 py-1.5 rounded-full transition-all duration-200",
-                    provider === p.id
-                      ? "bg-accent text-accent-foreground"
-                      : "text-muted-foreground hover:text-foreground hover:bg-muted"
-                  )}
-                >
-                  {p.label}
-                </button>
-              ))}
-            </div>
-          </div>
-
-          <div className="sm:hidden flex justify-center gap-1 border-b border-border py-2">
-            {PROVIDERS.map((p) => (
-              <button
-                key={p.id}
-                onClick={() => setProvider(p.id)}
-                className={cn(
-                  "font-mono text-[11px] px-3 py-1 rounded-full transition-colors",
-                  provider === p.id ? "bg-accent text-accent-foreground" : "text-muted-foreground"
-                )}
-              >
-                {p.label}
-              </button>
-            ))}
+            <ModelDropdown value={provider} onChange={handleModelChange} />
           </div>
 
           <CardContent className="p-0">
-            <div ref={scrollRef} className="h-[28rem] overflow-y-auto px-6 py-6 space-y-5">
-              {messages.map((m, i) => (
-                <div
-                  key={i}
-                  className={cn(
-                    "flex gap-3 items-end",
-                    m.role === "user" ? "flex-row-reverse" : "flex-row"
-                  )}
-                >
-                  {m.role === "assistant" && <HonkaAvatar size="h-7 w-7" />}
+            <div ref={scrollRef} className="h-[28rem] overflow-y-auto px-6 py-6 space-y-4">
+              {messages.map((m, i) => {
+                if (m.role === "system") {
+                  return <SystemNotice key={i} content={m.content} />;
+                }
+                return (
                   <div
+                    key={i}
                     className={cn(
-                      "max-w-[75%] flex flex-col",
-                      m.role === "user" ? "items-end" : "items-start"
+                      "flex gap-3 items-end",
+                      m.role === "user" ? "flex-row-reverse" : "flex-row"
                     )}
                   >
+                    {m.role === "assistant" && <HonkaAvatar size="h-7 w-7" />}
                     <div
                       className={cn(
-                        "rounded-2xl px-4 py-2.5 text-sm leading-relaxed transition-transform hover:-translate-y-0.5",
-                        m.role === "user"
-                          ? "bg-accent text-accent-foreground rounded-br-sm"
-                          : "bg-muted text-foreground rounded-bl-sm"
+                        "max-w-[75%] flex flex-col",
+                        m.role === "user" ? "items-end" : "items-start"
                       )}
                     >
-                      <ReactMarkdown
-                        components={{
-                          p: ({ children }) => <p className="m-0 [&:not(:first-child)]:mt-2">{children}</p>,
-                          strong: ({ children }) => (
-                            <strong className="font-semibold">{children}</strong>
-                          ),
-                          ul: ({ children }) => (
-                            <ul className="list-disc pl-4 my-1 space-y-0.5">{children}</ul>
-                          ),
-                          li: ({ children }) => <li>{children}</li>,
-                          code: ({ children }) => (
-                            <code className="font-mono text-xs bg-background/30 rounded px-1 py-0.5">
-                              {children}
-                            </code>
-                          ),
-                          a: ({ children, href }) => (
-                            <a
-                              href={href}
-                              target="_blank"
-                              rel="noreferrer"
-                              className="underline underline-offset-2"
-                            >
-                              {children}
-                            </a>
-                          ),
-                        }}
+                      <div
+                        className={cn(
+                          "rounded-2xl px-4 py-2.5 text-sm leading-relaxed transition-transform hover:-translate-y-0.5",
+                          m.role === "user"
+                            ? "bg-accent text-accent-foreground rounded-br-sm"
+                            : "bg-muted text-foreground rounded-bl-sm"
+                        )}
                       >
-                        {m.content}
-                      </ReactMarkdown>
-                    </div>
-                    <div className="flex items-center gap-1.5 mt-1 px-1">
-                      <span className="text-[10px] text-muted-foreground/70">
-                        {formatTime(m.timestamp)}
-                      </span>
-                      {m.provider && (
-                        <span className="text-[10px] font-mono text-muted-foreground/70">
-                          · via {m.provider}
+                        <ReactMarkdown
+                          components={{
+                            p: ({ children }) => (
+                              <p className="m-0 [&:not(:first-child)]:mt-2">{children}</p>
+                            ),
+                            strong: ({ children }) => (
+                              <strong className="font-semibold">{children}</strong>
+                            ),
+                            ul: ({ children }) => (
+                              <ul className="list-disc pl-4 my-1 space-y-0.5">{children}</ul>
+                            ),
+                            li: ({ children }) => <li>{children}</li>,
+                            code: ({ children }) => (
+                              <code className="font-mono text-xs bg-background/30 rounded px-1 py-0.5">
+                                {children}
+                              </code>
+                            ),
+                            a: ({ children, href }) => (
+                              <a
+                                href={href}
+                                target="_blank"
+                                rel="noreferrer"
+                                className="underline underline-offset-2"
+                              >
+                                {children}
+                              </a>
+                            ),
+                          }}
+                        >
+                          {m.content}
+                        </ReactMarkdown>
+                      </div>
+                      <div className="flex items-center gap-1.5 mt-1 px-1">
+                        <span className="text-[10px] text-muted-foreground/70">
+                          {formatTime(m.timestamp)}
                         </span>
-                      )}
+                        {m.role === "assistant" && m.provider && (
+                          <span className="text-[10px] font-mono text-muted-foreground/70">
+                            · via {m.provider}
+                          </span>
+                        )}
+                      </div>
                     </div>
                   </div>
-                </div>
-              ))}
+                );
+              })}
 
               {loading && (
                 <div className="flex gap-3 items-end">
