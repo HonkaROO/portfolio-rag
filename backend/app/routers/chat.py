@@ -1,4 +1,6 @@
 from fastapi import APIRouter, HTTPException
+from app.runtime import current_model
+from app.model_registry import MODEL_REGISTRY
 from app.schemas import ChatRequest, ChatResponse, Source
 from app.rag.retrieve import retrieve_chunks
 from app.rag.generate import generate_answer
@@ -24,3 +26,17 @@ def chat(req: ChatRequest):
         answer=answer,
         sources=[Source(content=c["content"], similarity=c.get("similarity", 0.0)) for c in chunks],
     )
+    
+@router.post("/model/{model_name}")
+def switch_model(model_name: str):
+    global current_model
+
+    if model_name not in MODEL_REGISTRY:
+        raise HTTPException(400, "Unknown model")
+
+    current_model = model_name
+
+    return {
+        "success": True,
+        "current_model": current_model
+    }

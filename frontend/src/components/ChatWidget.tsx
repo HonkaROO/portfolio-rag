@@ -156,19 +156,47 @@ export default function ChatWidget() {
     inputRef.current?.focus();
   }, []);
 
-  function handleModelChange(next: Provider) {
+  async function handleModelChange(next: Provider) {
     if (next === provider) return;
-    setProvider(next);
-    setMessages((prev) => [
-      ...prev,
-      { role: "system", content: `Switched to ${MODEL_LABEL[next]}`, timestamp: Date.now() },
-    ]);
+
+    try {
+      const response = await fetch(`${API_URL}/model/${next}`, {
+        method: "POST",
+      });
+
+      if (!response.ok) {
+        throw new Error("Failed to switch model");
+      }
+
+      const data = await response.json();
+
+      setProvider(next);
+
+      setMessages((prev) => [
+        ...prev,
+        {
+          role: "system",
+          content: `⚡ Switched to ${MODEL_LABEL[next]}`,
+          timestamp: Date.now(),
+        },
+      ]);
+    } catch (err) {
+      console.error(err);
+
+      setMessages((prev) => [
+        ...prev,
+        {
+          role: "system",
+          content: `❌ Failed to switch to ${MODEL_LABEL[next]}`,
+          timestamp: Date.now(),
+        },
+      ]);
+    }
   }
 
   async function send(question: string) {
     if (!question.trim() || loading) return;
     setError(null);
-    const requestedProvider = provider;
     const next: Message[] = [
       ...messages,
       { role: "user", content: question, timestamp: Date.now() },
@@ -179,29 +207,15 @@ export default function ChatWidget() {
     try {
       const res = await fetch(`${API_URL}/chat`, {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ question, provider: requestedProvider }),
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          question,
+        }),
       });
       if (!res.ok) throw new Error(`Backend returned ${res.status}`);
       const data = await res.json();
-      const usedProvider = data.provider as Provider;
-
-      const inserts: Message[] = [];
-      if (usedProvider && usedProvider !== requestedProvider) {
-        inserts.push({
-          role: "system",
-          content: `Auto-switched to ${MODEL_LABEL[usedProvider]} — ${MODEL_LABEL[requestedProvider]} was unavailable`,
-          timestamp: Date.now(),
-        });
-      }
-      inserts.push({
-        role: "assistant",
-        content: data.answer,
-        provider: usedProvider,
-        timestamp: Date.now(),
-      });
-
-      setMessages([...next, ...inserts]);
     } catch {
       setError(
         "Couldn't reach the assistant backend. If you're running this locally, make sure the FastAPI server is up at " +

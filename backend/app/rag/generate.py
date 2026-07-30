@@ -6,6 +6,7 @@ from app.model_registry import (
     get_supported_models,
     get_supported_providers,
 )
+from app.runtime import current_model
 
 
 SYSTEM_PROMPT = (
@@ -89,7 +90,7 @@ Instructions:
 
 
 def generate_answer(question: str, chunks: list[dict]) -> str:
-    model_info = MODEL_REGISTRY.get(settings.llm_model)
+    model_info = MODEL_REGISTRY.get(current_model)
 
     if model_info is None:
         supported = ", ".join(MODEL_REGISTRY.keys())
