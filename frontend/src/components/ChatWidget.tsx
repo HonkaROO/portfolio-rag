@@ -15,6 +15,13 @@ const MODELS = [
 ] as const;
 
 type Provider = (typeof MODELS)[number]["id"];
+
+const MODEL_MAP: Record<Provider, string> = {
+  gemini: "gemini-3.1-flash-lite",
+  groq: "llama-3.1-8b-instant",
+  azure: "gpt-5-nano",
+};
+
 const MODEL_LABEL: Record<Provider, string> = Object.fromEntries(
   MODELS.map((m) => [m.id, m.label])
 ) as Record<Provider, string>;
@@ -140,6 +147,7 @@ export default function ChatWidget() {
       timestamp: Date.now(),
     },
   ]);
+
   const [provider, setProvider] = useState<Provider>("groq");
   const [input, setInput] = useState("");
   const [loading, setLoading] = useState(false);
@@ -149,7 +157,10 @@ export default function ChatWidget() {
   const inputRef = useRef<HTMLTextAreaElement>(null);
 
   useEffect(() => {
-    scrollRef.current?.scrollTo({ top: scrollRef.current.scrollHeight, behavior: "smooth" });
+    scrollRef.current?.scrollTo({
+      top: scrollRef.current.scrollHeight,
+      behavior: "smooth",
+    });
   }, [messages, loading]);
 
   useEffect(() => {
@@ -160,15 +171,17 @@ export default function ChatWidget() {
     if (next === provider) return;
 
     try {
-      const response = await fetch(`${API_URL}/model/${next}`, {
+      const modelName = MODEL_MAP[next];
+
+      const response = await fetch(`${API_URL}/model/${modelName}`, {
         method: "POST",
       });
 
       if (!response.ok) {
-        throw new Error("Failed to switch model");
+        throw new Error(`Failed to switch model (${response.status})`);
       }
 
-      const data = await response.json();
+      await response.json();
 
       setProvider(next);
 
@@ -196,14 +209,20 @@ export default function ChatWidget() {
 
   async function send(question: string) {
     if (!question.trim() || loading) return;
+
     setError(null);
-    const next: Message[] = [
-      ...messages,
-      { role: "user", content: question, timestamp: Date.now() },
-    ];
-    setMessages(next);
+
+    const userMessage: Message = {
+      role: "user",
+      content: question,
+      timestamp: Date.now(),
+    };
+
+    setMessages((prev) => [...prev, userMessage]);
+
     setInput("");
     setLoading(true);
+
     try {
       const res = await fetch(`${API_URL}/chat`, {
         method: "POST",
@@ -214,9 +233,26 @@ export default function ChatWidget() {
           question,
         }),
       });
-      if (!res.ok) throw new Error(`Backend returned ${res.status}`);
+
+      if (!res.ok) {
+        throw new Error(`Backend returned ${res.status}`);
+      }
+
       const data = await res.json();
-    } catch {
+
+      setMessages((prev) => [
+        ...prev,
+        {
+          role: "assistant",
+          content: data.answer,
+          timestamp: Date.now(),
+          provider: provider,
+        },
+      ]);
+
+    } catch (err) {
+      console.error(err);
+
       setError(
         "Couldn't reach the assistant backend. If you're running this locally, make sure the FastAPI server is up at " +
           API_URL
@@ -328,7 +364,7 @@ export default function ChatWidget() {
                         </span>
                         {m.role === "assistant" && m.provider && (
                           <span className="text-[10px] font-mono text-muted-foreground/70">
-                            · via {m.provider}
+                            · via {MODEL_LABEL[m.provider]}
                           </span>
                         )}
                       </div>
