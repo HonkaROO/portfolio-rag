@@ -163,10 +163,6 @@ export default function ChatWidget() {
     });
   }, [messages, loading]);
 
-  useEffect(() => {
-    inputRef.current?.focus();
-  }, []);
-
   async function handleModelChange(next: Provider) {
     if (next === provider) return;
 
