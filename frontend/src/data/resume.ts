@@ -45,41 +45,56 @@ export const experience = [
 
 export const projects = [
   {
-    name: "N-PAX Onboarding eXpert (NOX)",
-    role: "Technical Lead",
-    stack: ["ASP.NET Core", "React", "FastAPI", "SQL Server"],
+    name: "RAG-Powered Onboarding System",
+    role: "Full-Stack Developer",
     bullets: [
-      "Designed a full-stack onboarding platform with an integrated RAG-powered AI chatbot for new hires.",
-      "Streamlined HR workflows with automated conversational assistance and personalized onboarding.",
+      "Architected a full-stack AI chatbot for automated onboarding.",
+      "Implemented vector search and LLM response generation.",
     ],
+    stack: ["React", "FastAPI", "Supabase", "Python"],
+    images: ["/projects/onboarding-1.jpg", "/projects/onboarding-2.jpg"],
+    longDescription: `
+### System Architecture
+Built a complete RAG pipeline to automate user onboarding. The system securely handles documents and leverages vector embeddings to give context-aware answers. 
+
+### Security & Hardening
+Specifically focused on AI security from a defensive perspective. The LLM prompts are heavily hardened against prompt injection attacks, ensuring the chatbot stays strictly within its system boundaries.
+    `,
   },
   {
-    name: "N-PAX File Management (Trackquire)",
-    role: "Project Manager",
-    stack: ["ASP.NET Core", "React", "SQL Server"],
+    name: "File Sync Platform",
+    role: "SaaS Founder & Engineer",
     bullets: [
-      "Spearheaded a secure file management platform for company document archiving and retrieval.",
-      "Directed database schema design and Entity Framework Core implementation while managing task assignments.",
+      "Developed a robust file synchronization platform.",
+      "Integrated global merchant of record services for tax compliance.",
     ],
+    stack: ["TypeScript", "React", "Azure AI", "Whop Payments"],
+    images: ["/projects/filesync-1.jpg", "/projects/filesync-2.jpg"],
+    longDescription: `
+### Launch & Deployment
+Preparing the launch phase for mid-2026. The platform handles real-time file synchronization across distributed nodes using an Agile workflow for continuous delivery.
+
+### Payment Stack
+Integrated Whop Payments for seamless global tax compliance and merchant of record services, allowing for easy handling of international clients and subscriptions.
+    `,
   },
   {
-    name: "EnrollME (Internship)",
-    role: "Backend Developer",
-    stack: ["Laravel", "SQL Server"],
+    name: "Proximity Networking Map",
+    role: "Backend Engineer",
     bullets: [
-      "Architected the backend for an education enrollment system with secure parent and admin portals.",
-      "Implemented authentication/authorization flows, optimized performance with DevOps and containerization.",
+      "Built a graph-based networking tool to map professional proximity.",
+      "Replaced manual cold outreach with shared node targeting.",
     ],
-  },
-  {
-    name: "SCSHelpDesk (Jumpstart Program)",
-    role: "Project Manager",
-    stack: ["C#", "JavaScript", "SQL Server"],
-    bullets: [
-      "Led a team building a web-based ticketing system across the full sprint lifecycle.",
-      "Managed task distribution and authored documentation for the core knowledge-base functionality.",
-    ],
-  },
+    stack: ["Node.js", "GraphQL", "Metal.so"],
+    images: ["/placeholder.jpg"], // Swap this out
+    longDescription: `
+### The Problem
+Manual cold outreach to founders and investors is highly inefficient. 
+
+### The Solution
+Leveraged Metal.so to build a proximity mapping system that identifies shared network nodes. This allows for warm introductions and highly targeted professional outreach based on graph proximity.
+    `,
+  }
 ];
 
 export const skills = {
