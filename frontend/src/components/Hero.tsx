@@ -24,6 +24,11 @@ export default function Hero() {
                 LinkedIn
               </a>
             </Button>
+            <Button variant="outline" asChild>
+              <a href={profile.github} target="_blank" rel="noreferrer">
+                Github
+              </a>
+            </Button>
           </div>
         </div>
 

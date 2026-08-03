@@ -4,6 +4,7 @@ export const profile = {
   location: "Lapu-lapu City, Cebu",
   email: "christiangumanit@gmail.com",
   linkedin: "https://www.linkedin.com/in/christian-gumanit/",
+  github: "https://github.com/HonkaROO",
   summary:
     "Strategic and results-oriented Software Engineer and Certified Microsoft Azure AI Engineer Associate with a specialized focus on AI development and web application architecture. Proven expertise architecting production-ready systems with ASP.NET Core, Laravel, and FastAPI. Google Certified Project Manager with a track record of leading Agile teams through the full project lifecycle.",
 };
@@ -52,6 +53,7 @@ export const projects = [
       "Designed a full-stack onboarding platform with an integrated RAG-powered AI chatbot for new hires.",
       "Streamlined HR workflows with automated conversational assistance and personalized onboarding.",
     ],
+    images: ["/nox_dashboard.png", "/nox_chatbot.png", "/nox_gov.png"],
   },
   {
     name: "N-PAX File Management (Trackquire)",
@@ -61,6 +63,7 @@ export const projects = [
       "Spearheaded a secure file management platform for company document archiving and retrieval.",
       "Directed database schema design and Entity Framework Core implementation while managing task assignments.",
     ],
+    images: ["/landing_page_trackquire.png", "/login_trackquire.png"],
   },
   {
     name: "EnrollME (Internship)",
@@ -70,6 +73,7 @@ export const projects = [
       "Architected the backend for an education enrollment system with secure parent and admin portals.",
       "Implemented authentication/authorization flows, optimized performance with DevOps and containerization.",
     ],
+    images: ["/enrollme_dashboard.png", "/enrollme_login.png"],
   },
   {
     name: "SCSHelpDesk (Jumpstart Program)",
@@ -79,6 +83,7 @@ export const projects = [
       "Led a team building a web-based ticketing system across the full sprint lifecycle.",
       "Managed task distribution and authored documentation for the core knowledge-base functionality.",
     ],
+    images: ["/alliance_landing.png", "/alliance_login.png"],
   },
 ];
 
