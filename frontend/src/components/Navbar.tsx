@@ -20,7 +20,7 @@ export default function Navbar() {
     <header className="sticky top-0 z-50 border-b border-border bg-background/80 backdrop-blur">
       <div className="container flex items-center justify-between h-16">
         <a href="#top" className="font-display font-medium">
-          {profile.name.split(" ")[0]} {profile.name.split(" ")[1]?.[0]}.
+          Who is Christian
         </a>
 
         <nav className="hidden md:flex items-center gap-6">
