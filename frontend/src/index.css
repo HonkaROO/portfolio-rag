@@ -20,6 +20,9 @@
   --accent: 174 55% 60%;
   --accent-foreground: 210 27% 9%;
   --border: 213 20% 20%;
+  --destructive: 0 72% 60%;
+  --destructive-foreground: 0 0% 98%;
+  --section-alt: 213 24% 11%;
   --radius: 0.5rem;
 }
 
@@ -34,6 +37,9 @@
   --accent: 175 84% 30%;
   --accent-foreground: 200 20% 97%;
   --border: 206 20% 84%;
+  --destructive: 0 72% 51%;
+  --destructive-foreground: 0 0% 98%;
+  --section-alt: 200 20% 92%;
 }
 
 html {
@@ -89,6 +95,28 @@ body {
 .reveal.is-visible {
   opacity: 1;
   transform: translateY(0);
+}
+
+/* Alternating section background - very subtle, keeps the page from
+   feeling like one flat slab while still reading as one continuous
+   surface (no hard section boundaries). */
+.section-alt {
+  background-color: hsl(var(--section-alt));
+}
+
+/* Gradient divider used instead of a hard border between sections, so
+   one chapter fades into the next rather than cutting sharply. */
+.section-fade-top {
+  position: relative;
+}
+.section-fade-top::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 1px;
+  background: linear-gradient(to right, transparent, hsl(var(--border)), transparent);
 }
 
 @media (prefers-reduced-motion: reduce) {

@@ -1,9 +1,10 @@
 import { useState } from "react";
-import { projects } from "@/data/resume";
+import { projects, profile } from "@/data/resume";
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import Reveal from "@/components/Reveal";
 import ReactMarkdown from "react-markdown";
+import { ArrowRight, Github } from "lucide-react";
 import {
   Dialog,
   DialogContent,
@@ -14,25 +15,43 @@ import {
 import { ScrollArea } from "@/components/ui/scroll-area";
 import ProjectLightbox from "@/components/ProjectLightbox";
 import ProjectGallery from "@/components/ProjectGallery";
+import SectionKicker from "@/components/SectionKicker";
 
 type LightboxState = { images: string[]; index: number } | null;
+
+// Featured = the 3 most representative of AI/RAG work. See profile.github
+// for the rest instead of listing every project on the page.
+const FEATURED = projects.slice(0, 3);
 
 export default function Projects() {
   const [lightbox, setLightbox] = useState<LightboxState>(null);
 
   return (
     <section id="projects" className="scroll-anchor border-b border-border">
-      <div className="container py-20">
-        <h2 className="font-display text-2xl font-bold mb-10">Projects</h2>
+      <div className="container py-14 lg:py-16">
+        <SectionKicker index="03" question="What he's built" />
+        <div className="flex items-end justify-between mb-10 gap-4 flex-wrap">
+          <h2 className="font-display text-2xl font-bold">Featured Projects</h2>
+          <a
+            href={profile.github}
+            target="_blank"
+            rel="noreferrer"
+            className="inline-flex items-center gap-1.5 text-sm text-muted-foreground hover:text-accent transition-colors"
+          >
+            <Github className="h-4 w-4" />
+            View all projects
+            <ArrowRight className="h-3.5 w-3.5" />
+          </a>
+        </div>
         <div className="grid md:grid-cols-2 gap-6">
-          {projects.map((p) => {
+          {FEATURED.map((p, i) => {
             const hasImages = p.images && p.images.length > 0;
 
             return (
-              <Reveal key={p.name}>
+              <Reveal key={p.name} delay={i * 100}>
                 <Dialog>
                   <DialogTrigger asChild>
-                    <Card className="cursor-pointer hover:border-accent transition-colors h-full flex flex-col group">
+                    <Card className="cursor-pointer hover:border-accent hover:shadow-[0_0_24px_-6px_hsl(var(--accent)/0.35)] hover:-translate-y-1 transition-all duration-300 h-full flex flex-col group">
                       <CardHeader>
                         <CardTitle className="group-hover:text-accent transition-colors">
                           {p.name}
@@ -98,6 +117,7 @@ export default function Projects() {
                               ),
                             }}
                           >
+                            {p.bullets.map((b) => `- ${b}`).join("\n")}
                           </ReactMarkdown>
                         </div>
                       </div>

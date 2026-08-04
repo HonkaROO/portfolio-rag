@@ -5,11 +5,10 @@ import ThemeToggle from "@/components/ThemeToggle";
 import { profile } from "@/data/resume";
 
 const LINKS = [
-  { href: "#about", label: "About" },
   { href: "#experience", label: "Experience" },
   { href: "#projects", label: "Projects" },
-  { href: "#skills", label: "Skills" },
-  { href: "#chat", label: "Chat" },
+  { href: "#stack", label: "Stack" },
+  { href: "#honka", label: "Honka" },
   { href: "#contact", label: "Contact" },
 ];
 
@@ -19,8 +18,13 @@ export default function Navbar() {
   return (
     <header className="sticky top-0 z-50 border-b border-border bg-background/80 backdrop-blur">
       <div className="container flex items-center justify-between h-16">
-        <a href="#top" className="font-display font-medium">
-          Who is Christian
+        <a href="#top" className="flex items-center gap-2.5 group">
+          <span className="h-8 w-8 shrink-0 rounded-full bg-accent/15 border border-accent/30 flex items-center justify-center font-display text-xs font-bold text-accent group-hover:bg-accent/25 transition-colors">
+            CG
+          </span>
+          <span className="font-display font-medium leading-none">
+            {profile.name.split(" ")[0]} {profile.name.split(" ").pop()}
+          </span>
         </a>
 
         <nav className="hidden md:flex items-center gap-6">

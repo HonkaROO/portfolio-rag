@@ -19,7 +19,6 @@ export const experience = [
       "Orchestrated end-to-end development of a corporate RAG chatbot as a Certified Azure AI Engineer Associate, enabling automated retrieval of company data for high-level partner presentations.",
       "Managed an Azure-focused technical team's growth and training, establishing a certification roadmap toward Microsoft Solutions Partner status.",
       "Served as Project Manager for a cross-functional team building a file management platform, from task assignment to technical documentation.",
-      "Organized team schedules and workflows using Agile methodologies to keep every project on time.",
     ],
   },
   {
@@ -87,6 +86,14 @@ export const projects = [
   },
 ];
 
+export const coreTech = {
+  Frontend: ["React", "TypeScript", "Tailwind"],
+  Backend: ["FastAPI", "ASP.NET Core", "Laravel"],
+  AI: ["Azure AI", "Azure AI Foundry", "RAG", "LLMs"],
+  Cloud: ["Azure", "Supabase"],
+  Database: ["PostgreSQL", "SQL Server"],
+};
+
 export const skills = {
   "Software Engineering": ["Microsoft Azure", "Microsoft Foundry", "AI Development"],
   "Web Development": ["React", "JavaScript", "Tailwind", "Figma"],
@@ -111,3 +118,16 @@ export const education = {
   school: "University of San Jose-Recoletos",
   period: "June 2021 – May 2025",
 };
+
+// What's actually running this portfolio - shown in the AI Stack section
+// and reused as the "current architecture" strip under the chatbot.
+export const aiStack = [
+  "Azure AI Foundry",
+  "Groq",
+  "Gemini",
+  "FastAPI",
+  "React",
+  "Supabase",
+  "ASP.NET Core",
+  "RAG",
+];

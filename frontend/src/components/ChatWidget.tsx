@@ -3,6 +3,8 @@ import ReactMarkdown from "react-markdown";
 import { Send, Sparkles, Code2, Award, X, Zap, ChevronDown, Check } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
+import SectionKicker from "@/components/SectionKicker";
+import { aiStack } from "@/data/resume";
 
 const API_URL = import.meta.env.VITE_API_URL || "http://localhost:8000";
 
@@ -267,11 +269,13 @@ export default function ChatWidget() {
   }
 
   return (
-    <section id="chat" className="scroll-anchor border-b border-border">
-      <div className="container py-20">
-        <h2 className="font-display text-2xl font-bold mb-2">Ask about my experience</h2>
+    <section id="honka" className="scroll-anchor border-b border-border">
+      <div className="container py-14 lg:py-16">
+        <SectionKicker index="05" question="See it in action" />
+        <h2 className="font-display text-2xl font-bold mb-2">Meet Honka</h2>
         <p className="text-sm text-muted-foreground mb-6">
-          Retrieval-augmented chat over the resume content on this page.
+          A retrieval-augmented assistant trained on everything above — ask it anything about
+          Christian's experience, projects, or skills, and pick which model answers.
         </p>
 
         <Card className="max-w-4xl mx-auto overflow-hidden">
@@ -434,6 +438,24 @@ export default function ChatWidget() {
             </form>
           </CardContent>
         </Card>
+
+        {/* Current architecture, reusing the same list shown in the AI Stack
+            section above - this is literally what's running the chat. */}
+        <div className="max-w-4xl mx-auto mt-6">
+          <p className="text-xs font-mono text-muted-foreground uppercase tracking-widest mb-3">
+            Current architecture
+          </p>
+          <div className="flex flex-wrap gap-2">
+            {aiStack.map((tech) => (
+              <span
+                key={tech}
+                className="text-xs font-mono px-3 py-1 rounded-full border border-border text-muted-foreground"
+              >
+                {tech}
+              </span>
+            ))}
+          </div>
+        </div>
       </div>
     </section>
   );

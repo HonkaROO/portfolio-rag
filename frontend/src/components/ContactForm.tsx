@@ -25,6 +25,7 @@ import { Card } from "@/components/ui/card";
 import { Checkbox } from "@/components/ui/checkbox";
 import { profile } from "@/data/resume";
 import { cn } from "@/lib/utils";
+import SectionKicker from "@/components/SectionKicker";
 
 const FORMSPREE_ID = import.meta.env.VITE_FORMSPREE_ID as string | undefined;
 const MAX_CHARS = 1000;
@@ -261,7 +262,7 @@ export default function ContactForm() {
   const labelClass = "text-xs font-semibold tracking-wide uppercase text-muted-foreground block mb-2";
 
   return (
-    <section id="contact" className="relative py-24 lg:py-32 overflow-hidden scroll-anchor text-foreground">
+    <section id="contact" className="relative py-16 lg:py-20 overflow-hidden scroll-anchor text-foreground">
       <div className="absolute top-0 left-0 w-full h-px bg-gradient-to-r from-transparent via-border to-transparent opacity-50" />
       <div className="absolute -top-[20%] -right-[10%] w-[50%] h-[50%] bg-accent/5 blur-[120px] rounded-full pointer-events-none" />
       <div className="absolute -bottom-[20%] -left-[10%] w-[50%] h-[50%] bg-accent/5 blur-[120px] rounded-full pointer-events-none" />
@@ -269,10 +270,11 @@ export default function ContactForm() {
       <div className="container relative z-10 grid lg:grid-cols-[1fr_1.4fr] gap-16 lg:gap-24 items-start">
         
         <div className="flex flex-col animate-in fade-in slide-in-from-bottom-8 duration-700">
-          <h2 className="font-display text-3xl sm:text-4xl lg:text-5xl font-bold tracking-tight leading-tight mb-6">
+          <SectionKicker index="06" question="How to reach him" />
+          <h2 className="font-display text-3xl sm:text-4xl lg:text-5xl font-bold tracking-tight leading-tight mb-5">
             Let's build something <span className="text-transparent bg-clip-text bg-gradient-to-r from-foreground to-muted-foreground">meaningful.</span>
           </h2>
-          <p className="text-base text-muted-foreground leading-relaxed mb-10 max-w-md">
+          <p className="text-base text-muted-foreground leading-relaxed mb-8 max-w-md">
             Whether you're looking for an AI-powered application, Azure AI integration, business automation, or a modern web platform, I'd love to hear about your project.
           </p>
 
@@ -297,7 +299,7 @@ export default function ContactForm() {
           <Card className="backdrop-blur-2xl bg-card/40 border-border/40 shadow-2xl relative overflow-hidden rounded-[2rem] p-1">
             <div className="absolute inset-0 bg-gradient-to-br from-accent/5 via-transparent to-transparent opacity-50 pointer-events-none" />
             
-            <div className="bg-card/80 backdrop-blur-3xl rounded-[1.85rem] border border-border/50 relative z-10 p-6 sm:p-10 min-h-[700px] flex flex-col justify-center shadow-sm">
+            <div className="bg-card/80 backdrop-blur-3xl rounded-[1.85rem] border border-border/50 relative z-10 p-6 sm:p-10 min-h-[560px] flex flex-col justify-center shadow-sm">
               
               {status === "sent" ? (
                 <div className="flex flex-col items-center justify-center text-center animate-in zoom-in-95 fade-in duration-700 py-16">
