@@ -1,6 +1,7 @@
 import Navbar from "@/components/Navbar";
 import Hero from "@/components/Hero";
 import Experience from "@/components/Experience";
+import Certifications from "@/components/Certifications";
 import Projects from "@/components/Projects";
 import AIStack from "@/components/AIStack";
 import ChatWidget from "@/components/ChatWidget";
@@ -8,9 +9,8 @@ import ContactForm from "@/components/ContactForm";
 import Footer from "@/components/Footer";
 
 // Page order is the narrative spine: who Christian is -> why he's
-// different -> what he's built -> what he specializes in -> see it in
-// action -> how to reach him. About and Skills are folded into Hero and
-// Experience respectively rather than getting their own scroll stops.
+// different (experience + credentials) -> what he's built -> what he
+// specializes in -> see it in action -> how to reach him.
 export default function App() {
   return (
     <>
@@ -18,6 +18,7 @@ export default function App() {
       <main>
         <Hero />
         <Experience />
+        <Certifications />
         <Projects />
         <AIStack />
         <ChatWidget />

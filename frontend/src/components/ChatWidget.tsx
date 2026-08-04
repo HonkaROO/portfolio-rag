@@ -271,7 +271,7 @@ export default function ChatWidget() {
   return (
     <section id="honka" className="scroll-anchor border-b border-border">
       <div className="container py-14 lg:py-16">
-        <SectionKicker index="05" question="See it in action" />
+        <SectionKicker index="06" question="See it in action" />
         <h2 className="font-display text-2xl font-bold mb-2">Meet Honka</h2>
         <p className="text-sm text-muted-foreground mb-6">
           A retrieval-augmented assistant trained on everything above — ask it anything about

@@ -1,8 +1,10 @@
 import { useState } from "react";
+import { GraduationCap } from "lucide-react";
 import { profile, education, coreTech } from "@/data/resume";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import SectionKicker from "@/components/SectionKicker";
+import SocialLinks from "@/components/SocialLinks";
 
 export default function Hero() {
   const [photoFailed, setPhotoFailed] = useState(false);
@@ -13,11 +15,11 @@ export default function Hero() {
     .join("");
 
   return (
-    <section id="top" className="scroll-anchor min-h-[72vh] flex items-center border-b border-border">
+    <section id="top" className="scroll-anchor min-h-[76vh] flex items-center border-b border-border">
       <div className="container py-14">
         <SectionKicker index="01" question="Who is Christian" />
 
-        <div className="grid lg:grid-cols-[1.2fr_1fr] gap-12 items-start">
+        <div className="grid lg:grid-cols-[1.15fr_0.85fr] gap-12 items-center">
           {/* Left: the pitch */}
           <div>
             <h1 className="font-display text-4xl md:text-5xl font-bold leading-[1.05] mb-5">
@@ -29,50 +31,53 @@ export default function Hero() {
             <p className="text-muted-foreground text-lg leading-relaxed max-w-xl mb-8">
               {profile.summary}
             </p>
-            <div className="flex flex-wrap gap-3">
+
+            <div className="flex flex-wrap gap-3 mb-8">
               <Button asChild>
                 <a href="#honka">Ask Honka, my AI assistant</a>
               </Button>
               <Button variant="outline" asChild>
-                <a href={profile.linkedin} target="_blank" rel="noreferrer">
-                  LinkedIn
-                </a>
-              </Button>
-              <Button variant="outline" asChild>
-                <a href={profile.github} target="_blank" rel="noreferrer">
-                  GitHub
-                </a>
+                <a href="#contact">Get in touch</a>
               </Button>
             </div>
+
+            <SocialLinks />
           </div>
 
-          {/* Right: photo + narrative + core tech - what used to be a
-              separate About section, folded in here so the "who is he"
-              answer arrives in one continuous read, not a second scroll. */}
+          {/* Right: a real photo (not a small afterthought), with education
+              called out as its own clearly readable line underneath. */}
           <div>
-            <div className="flex items-center gap-4 mb-5">
+            <div className="rounded-2xl border border-border bg-card overflow-hidden mb-5">
               {!photoFailed ? (
                 <img
                   src="/avatar.jpg"
                   alt={profile.name}
                   onError={() => setPhotoFailed(true)}
-                  className="w-16 h-16 rounded-xl object-cover object-top border border-border shrink-0"
+                  className="w-full aspect-[4/5] object-cover object-top"
                 />
               ) : (
                 <div
-                  className="w-16 h-16 rounded-xl border border-border bg-muted flex items-center justify-center font-display text-lg text-accent shrink-0"
+                  className="w-full aspect-[4/5] flex items-center justify-center font-display text-6xl text-accent bg-muted"
                   title="Drop a photo at frontend/public/avatar.jpg to replace this"
                 >
                   {initials}
                 </div>
               )}
-              <p className="text-sm text-muted-foreground leading-relaxed">
-                Based in {profile.location}. {education.degree.replace("Bachelor of Science in ", "BS ")},{" "}
-                {education.school} ({education.period.split(" – ")[1]}).
-              </p>
             </div>
 
-            <div className="space-y-4">
+            {/* Education - its own row so it can't get lost like it did
+                buried in a sentence next to a small photo. */}
+            <div className="flex items-start gap-3 mb-6 p-4 rounded-xl border border-border bg-card">
+              <GraduationCap className="h-5 w-5 text-accent shrink-0 mt-0.5" />
+              <div>
+                <p className="text-sm font-medium leading-snug">{education.degree}</p>
+                <p className="text-sm text-muted-foreground">
+                  {education.school} · {education.period}
+                </p>
+              </div>
+            </div>
+
+            <div className="space-y-3">
               {Object.entries(coreTech).map(([group, items]) => (
                 <div key={group} className="flex items-start gap-3">
                   <p className="text-xs font-mono text-muted-foreground w-16 shrink-0 pt-1">{group}</p>

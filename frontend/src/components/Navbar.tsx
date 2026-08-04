@@ -6,6 +6,7 @@ import { profile } from "@/data/resume";
 
 const LINKS = [
   { href: "#experience", label: "Experience" },
+  { href: "#certifications", label: "Certifications" },
   { href: "#projects", label: "Projects" },
   { href: "#stack", label: "Stack" },
   { href: "#honka", label: "Honka" },

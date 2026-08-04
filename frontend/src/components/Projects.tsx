@@ -19,9 +19,9 @@ import SectionKicker from "@/components/SectionKicker";
 
 type LightboxState = { images: string[]; index: number } | null;
 
-// Featured = the 3 most representative of AI/RAG work. See profile.github
-// for the rest instead of listing every project on the page.
-const FEATURED = projects.slice(0, 3);
+// All of resume.ts's projects are already "featured" - show every one
+// rather than arbitrarily hiding the last.
+const FEATURED = projects;
 
 export default function Projects() {
   const [lightbox, setLightbox] = useState<LightboxState>(null);
@@ -29,7 +29,7 @@ export default function Projects() {
   return (
     <section id="projects" className="scroll-anchor border-b border-border">
       <div className="container py-14 lg:py-16">
-        <SectionKicker index="03" question="What he's built" />
+        <SectionKicker index="04" question="What he's built" />
         <div className="flex items-end justify-between mb-10 gap-4 flex-wrap">
           <h2 className="font-display text-2xl font-bold">Featured Projects</h2>
           <a

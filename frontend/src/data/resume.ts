@@ -108,9 +108,35 @@ export const skills = {
 };
 
 export const certifications = [
-  "Microsoft Certified: Azure AI Engineer Associate — March 2026",
-  "Google Project Management Professional — December 2025",
-  "AWS Academy Graduate, Cloud Architecting — May 2025",
+  {
+    name: "Azure AI Engineer Associate",
+    issuer: "Microsoft",
+    date: "March 2026",
+    credentialId: "AI-102",
+    // Drop the actual badge/certificate image at this path once you have it -
+    // the section gracefully shows a placeholder card until then.
+    image: "/certs/azure-ai-engineer.png",
+  },
+  {
+    name: "Project Management Professional",
+    issuer: "Google",
+    date: "December 2025",
+    credentialId: undefined,
+    image: "/certs/google-pm.png",
+  },
+  {
+    name: "AWS Academy Graduate — Cloud Architecting",
+    issuer: "AWS Academy",
+    date: "May 2025",
+    credentialId: undefined,
+    image: "/certs/aws-cloud-architecting.png",
+  },
+];
+
+export const socialLinks = [
+  { key: "email", label: "Email", href: "mailto:christiangumanit@gmail.com" },
+  { key: "github", label: "GitHub", href: "https://github.com/HonkaROO" },
+  { key: "linkedin", label: "LinkedIn", href: "https://www.linkedin.com/in/christian-gumanit/" },
 ];
 
 export const education = {

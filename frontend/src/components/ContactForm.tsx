@@ -270,7 +270,7 @@ export default function ContactForm() {
       <div className="container relative z-10 grid lg:grid-cols-[1fr_1.4fr] gap-16 lg:gap-24 items-start">
         
         <div className="flex flex-col animate-in fade-in slide-in-from-bottom-8 duration-700">
-          <SectionKicker index="06" question="How to reach him" />
+          <SectionKicker index="07" question="How to reach him" />
           <h2 className="font-display text-3xl sm:text-4xl lg:text-5xl font-bold tracking-tight leading-tight mb-5">
             Let's build something <span className="text-transparent bg-clip-text bg-gradient-to-r from-foreground to-muted-foreground">meaningful.</span>
           </h2>
