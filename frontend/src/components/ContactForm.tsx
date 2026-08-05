@@ -126,7 +126,7 @@ const AvailabilityCard: React.FC = () => (
     <div className="space-y-4">
       <div className="flex items-center gap-3 text-sm text-muted-foreground">
         <Briefcase className="h-4 w-4 shrink-0" />
-        <span>Freelance • Consulting • Full-time</span>
+        <span>Freelance • Consulting • Part-time</span>
       </div>
       <div className="flex items-center gap-3 text-sm text-muted-foreground">
         <Clock className="h-4 w-4 shrink-0" />

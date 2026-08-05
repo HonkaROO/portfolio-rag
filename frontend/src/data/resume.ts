@@ -113,23 +113,21 @@ export const certifications = [
     issuer: "Microsoft",
     date: "March 2026",
     credentialId: "AI-102",
-    // Drop the actual badge/certificate image at this path once you have it -
-    // the section gracefully shows a placeholder card until then.
-    image: "/certs/azure-ai-engineer.png",
+    image: "/microsoft_ai.jpg",
   },
   {
     name: "Project Management Professional",
     issuer: "Google",
     date: "December 2025",
-    credentialId: undefined,
-    image: "/certs/google-pm.png",
+    credentialId: "2GUEFB8XWW19",
+    image: "/google_pm.png",
   },
   {
-    name: "AWS Academy Graduate — Cloud Architecting",
+    name: "AWS Academy — Cloud Architecting",
     issuer: "AWS Academy",
     date: "May 2025",
     credentialId: undefined,
-    image: "/certs/aws-cloud-architecting.png",
+    image: "/aws_cloud.jpg",
   },
 ];
 
