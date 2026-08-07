@@ -22,10 +22,27 @@ export default function Skills() {
         </div>
         <div>
           <h2 className="font-display text-2xl font-bold mb-8">Certifications</h2>
-          <ul className="space-y-3">
-            {certifications.map((c) => (
-              <li key={c} className="text-sm text-muted-foreground pl-4 border-l border-accent/50">
-                {c}
+          <ul className="space-y-4">
+            {certifications.map((cert) => (
+              <li
+                key={cert.name}
+                className="pl-4 border-l border-accent/50"
+              >
+                <p className="font-medium">{cert.name}</p>
+
+                <p className="text-sm text-muted-foreground">
+                  {cert.issuer}
+                </p>
+
+                <p className="text-xs text-muted-foreground">
+                  {cert.date}
+                </p>
+
+                {cert.credentialId && (
+                  <p className="text-xs text-accent">
+                    {cert.credentialId}
+                  </p>
+                )}
               </li>
             ))}
           </ul>
