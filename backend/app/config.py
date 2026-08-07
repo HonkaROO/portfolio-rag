@@ -15,6 +15,9 @@ class Settings(BaseSettings):
     groq_api_key: str = ""
     gemini_api_key: str = ""
     azure_api_key: str = ""
+    
+    # azure_endpoint: str
+    # azure_embedding_model: str
 
     allowed_origins: str = "http://localhost:5173"
 

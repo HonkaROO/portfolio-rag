@@ -32,6 +32,14 @@ MODEL_REGISTRY = {
     ),
 }
 
+EMBEDDING_REGISTRY = {
+    "azure": ModelInfo(
+        provider="azure",
+        model="text-embedding-3-small",
+        endpoint="https://example-hub-resource.openai.azure.com/openai/v1/embeddings",
+    ),
+}
+
 def get_model(name: str) -> ModelInfo:
     try:
         return MODEL_REGISTRY[name]

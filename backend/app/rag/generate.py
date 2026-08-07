@@ -78,7 +78,6 @@ Architecture:
 - React + Vite frontend
 - Supabase Vector Search
 - Retrieval-Augmented Generation (RAG)
-- Sentence Transformers embeddings
  
 Supported AI Providers:
 {supported_providers}

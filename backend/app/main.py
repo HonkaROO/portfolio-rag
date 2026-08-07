@@ -5,6 +5,8 @@ from app.routers import chat
 
 app = FastAPI(title="Gumanit Portfolio RAG API")
 
+print("ALLOWED_ORIGINS =", settings.allowed_origins)
+
 app.add_middleware(
     CORSMiddleware,
     allow_origins=[o.strip() for o in settings.allowed_origins.split(",")],
