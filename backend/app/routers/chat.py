@@ -1,40 +1,132 @@
-from fastapi import APIRouter, HTTPException
-import app.runtime as runtime
+import json
+import time
+
+from fastapi import APIRouter, HTTPException, Request
+from fastapi.responses import StreamingResponse
+
+from app.runtime import current_model
 from app.model_registry import MODEL_REGISTRY
 from app.schemas import ChatRequest, ChatResponse, Source
 from app.rag.retrieve import retrieve_chunks
-from app.rag.generate import generate_answer
+from app.rag.generate import generate_answer, LLMProviderError
+from app.security import check_rate_limit, validate_question, looks_like_injection, INJECTION_RESPONSE
 
 router = APIRouter()
 
+NO_CONTEXT_ANSWER = (
+    "I don't have information on that yet — try asking about Christian's "
+    "experience, projects, or skills, or reach out to him directly."
+)
+
 
 @router.post("/chat", response_model=ChatResponse)
-def chat(req: ChatRequest):
-    if not req.question.strip():
-        raise HTTPException(status_code=400, detail="question must not be empty")
+def chat(req: ChatRequest, request: Request):
+    check_rate_limit(request)
+    question = validate_question(req.question)
 
-    chunks = retrieve_chunks(req.question)
+    if looks_like_injection(question):
+        return ChatResponse(answer=INJECTION_RESPONSE, sources=[])
+
+    try:
+        chunks = retrieve_chunks(question)
+    except Exception as exc:  # Supabase/embedding failure - not the user's fault
+        raise HTTPException(status_code=503, detail="The knowledge base is temporarily unavailable.") from exc
+
     if not chunks:
-        return ChatResponse(
-            answer="I don't have information on that yet — try asking about Christian's "
-            "experience, projects, or skills, or reach out to him directly.",
-            sources=[],
-        )
+        return ChatResponse(answer=NO_CONTEXT_ANSWER, sources=[])
 
-    answer = generate_answer(req.question, chunks)
+    try:
+        answer = generate_answer(question, chunks)
+    except LLMProviderError as exc:
+        raise HTTPException(status_code=exc.status_code, detail=exc.message) from exc
+
     return ChatResponse(
         answer=answer,
         sources=[Source(content=c["content"], similarity=c.get("similarity", 0.0)) for c in chunks],
     )
-    
+
+
+def _sse(stage: str, **payload) -> str:
+    """One Server-Sent Event frame. Each stage the frontend's RAGTrace
+    widget lights up corresponds exactly to one of these being sent -
+    the elapsed_ms values are real, measured around the actual retrieval
+    and generation calls, not simulated."""
+    return f"data: {json.dumps({'stage': stage, **payload})}\n\n"
+
+
+def _stream_chat(question: str):
+    t_start = time.perf_counter()
+    yield _sse("query")
+
+    if looks_like_injection(question):
+        yield _sse(
+            "respond",
+            elapsed_ms=round((time.perf_counter() - t_start) * 1000),
+            answer=INJECTION_RESPONSE,
+            sources=[],
+            model=current_model,
+        )
+        return
+
+    try:
+        t0 = time.perf_counter()
+        chunks = retrieve_chunks(question)
+        retrieve_ms = round((time.perf_counter() - t0) * 1000)
+    except Exception:
+        # Streaming has already started (200 headers sent), so a failure
+        # here has to surface as an in-band "error" event rather than an
+        # HTTP error status - the client is listening for this stage.
+        yield _sse("error", message="The knowledge base is temporarily unavailable.")
+        return
+
+    yield _sse("retrieve", elapsed_ms=retrieve_ms, chunk_count=len(chunks))
+
+    if not chunks:
+        yield _sse(
+            "respond",
+            elapsed_ms=round((time.perf_counter() - t_start) * 1000),
+            answer=NO_CONTEXT_ANSWER,
+            sources=[],
+            model=current_model,
+        )
+        return
+
+    yield _sse("generate")
+    t1 = time.perf_counter()
+    try:
+        answer = generate_answer(question, chunks)
+    except LLMProviderError as exc:
+        yield _sse("error", message=exc.message, provider=exc.provider)
+        return
+    generate_ms = round((time.perf_counter() - t1) * 1000)
+
+    yield _sse(
+        "respond",
+        elapsed_ms=round((time.perf_counter() - t_start) * 1000),
+        generate_ms=generate_ms,
+        answer=answer,
+        sources=[{"content": c["content"], "similarity": c.get("similarity", 0.0)} for c in chunks],
+        model=current_model,
+    )
+
+
+@router.post("/chat/stream")
+def chat_stream(req: ChatRequest, request: Request):
+    check_rate_limit(request)
+    question = validate_question(req.question)
+    return StreamingResponse(_stream_chat(question), media_type="text/event-stream")
+
+
 @router.post("/model/{model_name}")
 def switch_model(model_name: str):
-    if model_name not in MODEL_REGISTRY:
-        raise HTTPException(status_code=400, detail="Unknown model")
+    global current_model
 
-    runtime.current_model = model_name
+    if model_name not in MODEL_REGISTRY:
+        raise HTTPException(400, "Unknown model")
+
+    current_model = model_name
 
     return {
         "success": True,
-        "current_model": runtime.current_model,
+        "current_model": current_model
     }

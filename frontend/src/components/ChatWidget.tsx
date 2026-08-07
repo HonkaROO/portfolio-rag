@@ -5,6 +5,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
 import SectionKicker from "@/components/SectionKicker";
 import { aiStack } from "@/data/resume";
+import RAGTrace, { TraceStage, TraceTimings } from "@/components/RAGTrace";
 
 const API_URL = import.meta.env.VITE_API_URL || "http://localhost:8000";
 
@@ -77,9 +78,11 @@ function HonkaAvatar({ size = "h-9 w-9" }: { size?: string }) {
 function ModelDropdown({
   value,
   onChange,
+  disabled,
 }: {
   value: Provider;
   onChange: (p: Provider) => void;
+  disabled?: boolean;
 }) {
   const [open, setOpen] = useState(false);
   const ref = useRef<HTMLDivElement>(null);
@@ -96,8 +99,9 @@ function ModelDropdown({
     <div ref={ref} className="relative">
       <button
         type="button"
+        disabled={disabled}
         onClick={() => setOpen((o) => !o)}
-        className="inline-flex items-center gap-2 font-mono text-xs px-3 py-1.5 rounded-full border border-border bg-muted/40 hover:border-accent transition-colors"
+        className="inline-flex items-center gap-2 font-mono text-xs px-3 py-1.5 rounded-full border border-border bg-muted/40 hover:border-accent transition-colors disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:border-border"
       >
         <span className="h-1.5 w-1.5 rounded-full bg-accent shrink-0" />
         <span className="max-w-[9rem] truncate">{MODEL_LABEL[value]}</span>
@@ -154,6 +158,15 @@ export default function ChatWidget() {
   const [input, setInput] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [cooldownUntil, setCooldownUntil] = useState(0);
+  const [now, setNow] = useState(Date.now());
+  const [trace, setTrace] = useState<{ stage: TraceStage; timings: TraceTimings }>({
+    stage: "idle",
+    timings: {},
+  });
+
+  const cooling = now < cooldownUntil;
+  const cooldownSecondsLeft = Math.ceil((cooldownUntil - now) / 1000);
 
   const scrollRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLTextAreaElement>(null);
@@ -165,8 +178,14 @@ export default function ChatWidget() {
     });
   }, [messages, loading]);
 
+  useEffect(() => {
+    if (cooldownUntil <= Date.now()) return;
+    const id = setInterval(() => setNow(Date.now()), 250);
+    return () => clearInterval(id);
+  }, [cooldownUntil]);
+
   async function handleModelChange(next: Provider) {
-    if (next === provider) return;
+    if (next === provider || loading) return;
 
     try {
       const modelName = MODEL_MAP[next];
@@ -206,7 +225,7 @@ export default function ChatWidget() {
   }
 
   async function send(question: string) {
-    if (!question.trim() || loading) return;
+    if (!question.trim() || loading || cooling) return;
 
     setError(null);
 
@@ -220,9 +239,15 @@ export default function ChatWidget() {
 
     setInput("");
     setLoading(true);
+    setTrace({ stage: "query", timings: {} });
+
+    // Default cooldown after any send attempt, successful or not - this is
+    // what actually stops rapid double-clicks/Enter-mashing, independent
+    // of whatever the backend's own rate limiter does.
+    let nextCooldownMs = 1500;
 
     try {
-      const res = await fetch(`${API_URL}/chat`, {
+      const res = await fetch(`${API_URL}/chat/stream`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -233,31 +258,102 @@ export default function ChatWidget() {
       });
 
       if (!res.ok) {
-        throw new Error(`Backend returned ${res.status}`);
+        // Before streaming even starts (rate limited, question too long,
+        // etc.) the backend returns a normal JSON error body, not SSE -
+        // parse it for the real reason instead of showing a generic status.
+        let detail = `Backend returned ${res.status}`;
+        try {
+          const body = await res.json();
+          if (body?.detail) detail = body.detail;
+        } catch {
+          /* body wasn't JSON - keep the generic message */
+        }
+        if (res.status === 429) nextCooldownMs = 8000;
+        throw new Error(detail);
       }
 
-      const data = await res.json();
+      if (!res.body) throw new Error("Empty response from server.");
 
-      setMessages((prev) => [
-        ...prev,
-        {
-          role: "assistant",
-          content: data.answer,
-          timestamp: Date.now(),
-          provider: provider,
-        },
-      ]);
+      // Parse the SSE stream by hand (fetch, not EventSource, since we need
+      // POST) - each "data: {...}\n\n" frame is one real pipeline stage as
+      // it actually happens on the backend, not a simulated delay.
+      const reader = res.body.getReader();
+      const decoder = new TextDecoder();
+      let buffer = "";
+      let finalAnswer: string | null = null;
+      let streamError: string | null = null;
 
+      while (true) {
+        const { done, value } = await reader.read();
+        if (done) break;
+        buffer += decoder.decode(value, { stream: true });
+
+        const frames = buffer.split("\n\n");
+        buffer = frames.pop() ?? "";
+
+        for (const frame of frames) {
+          const line = frame.trim();
+          if (!line.startsWith("data:")) continue;
+
+          let evt: any;
+          try {
+            evt = JSON.parse(line.slice(5).trim());
+          } catch {
+            continue;
+          }
+
+          if (evt.stage === "retrieve") {
+            setTrace((t) => ({
+              stage: "retrieve",
+              timings: { ...t.timings, retrieve_ms: evt.elapsed_ms, chunk_count: evt.chunk_count },
+            }));
+          } else if (evt.stage === "generate") {
+            setTrace((t) => ({ stage: "generate", timings: t.timings }));
+          } else if (evt.stage === "respond") {
+            setTrace((t) => ({
+              stage: "respond",
+              timings: { ...t.timings, generate_ms: evt.generate_ms, total_ms: evt.elapsed_ms },
+            }));
+            finalAnswer = evt.answer;
+          } else if (evt.stage === "error") {
+            streamError = evt.provider
+              ? `${evt.provider}: ${evt.message}`
+              : evt.message ?? "Something went wrong generating a response.";
+          }
+        }
+      }
+
+      if (streamError) throw new Error(streamError);
+
+      if (finalAnswer !== null) {
+        setMessages((prev) => [
+          ...prev,
+          {
+            role: "assistant",
+            content: finalAnswer!,
+            timestamp: Date.now(),
+            provider: provider,
+          },
+        ]);
+      }
     } catch (err) {
       console.error(err);
 
+      const message = err instanceof Error ? err.message : "Something went wrong.";
       setError(
-        "Couldn't reach the assistant backend. If you're running this locally, make sure the FastAPI server is up at " +
-          API_URL
+        message.toLowerCase().includes("fetch") || message.toLowerCase().includes("network")
+          ? `Couldn't reach the assistant backend. If you're running this locally, make sure the FastAPI server is up at ${API_URL}`
+          : message
       );
+      setTrace({ stage: "idle", timings: {} });
     } finally {
       setLoading(false);
+      setCooldownUntil(Date.now() + nextCooldownMs);
+      setNow(Date.now());
       requestAnimationFrame(() => inputRef.current?.focus());
+      // Leave the completed trace visible for a few seconds so it's actually
+      // readable, then clear it for the next message.
+      setTimeout(() => setTrace({ stage: "idle", timings: {} }), 4000);
     }
   }
 
@@ -290,12 +386,16 @@ export default function ChatWidget() {
               </div>
               <div className="min-w-0">
                 <p className="font-display font-medium leading-tight">Meet Honka</p>
-                <p className="text-xs text-muted-foreground">AI assistant · online</p>
+                <p className="text-xs text-muted-foreground">
+                  {loading ? `Generating via ${MODEL_LABEL[provider]}…` : `${MODEL_LABEL[provider]} · online`}
+                </p>
               </div>
             </div>
 
-            <ModelDropdown value={provider} onChange={handleModelChange} />
+            <ModelDropdown value={provider} onChange={handleModelChange} disabled={loading} />
           </div>
+
+          {trace.stage !== "idle" && <RAGTrace stage={trace.stage} timings={trace.timings} />}
 
           <CardContent className="p-0">
             <div ref={scrollRef} className="h-[28rem] overflow-y-auto px-6 py-6 space-y-4">
@@ -376,8 +476,11 @@ export default function ChatWidget() {
               {loading && (
                 <div className="flex gap-3 items-end">
                   <HonkaAvatar size="h-7 w-7" />
-                  <div className="bg-muted rounded-2xl rounded-bl-sm">
+                  <div className="bg-muted rounded-2xl rounded-bl-sm flex items-center gap-2 pr-3">
                     <TypingDots />
+                    <span className="text-[10px] font-mono text-muted-foreground/70">
+                      via {MODEL_LABEL[provider]}
+                    </span>
                   </div>
                 </div>
               )}
@@ -402,7 +505,8 @@ export default function ChatWidget() {
                 <button
                   key={text}
                   onClick={() => send(text)}
-                  className="inline-flex items-center gap-1.5 font-mono text-xs px-3 py-1.5 rounded-full border border-border text-muted-foreground hover:border-accent hover:text-accent hover:-translate-y-0.5 transition-all duration-200"
+                  disabled={loading || cooling}
+                  className="inline-flex items-center gap-1.5 font-mono text-xs px-3 py-1.5 rounded-full border border-border text-muted-foreground hover:border-accent hover:text-accent hover:-translate-y-0.5 transition-all duration-200 disabled:opacity-40 disabled:hover:translate-y-0 disabled:cursor-not-allowed"
                 >
                   <Icon className="h-3 w-3" />
                   {text}
@@ -423,15 +527,20 @@ export default function ChatWidget() {
                 value={input}
                 onChange={(e) => setInput(e.target.value)}
                 onKeyDown={handleKeyDown}
-                placeholder="Ask a question… (Shift+Enter for a new line)"
+                disabled={cooling}
+                placeholder={
+                  cooling
+                    ? `Wait ${cooldownSecondsLeft}s before sending again…`
+                    : "Ask a question… (Shift+Enter for a new line)"
+                }
                 rows={1}
-                className="flex-1 resize-none bg-transparent border border-border rounded-2xl px-4 py-2.5 text-sm outline-none focus:border-accent transition-colors max-h-32"
+                className="flex-1 resize-none bg-transparent border border-border rounded-2xl px-4 py-2.5 text-sm outline-none focus:border-accent transition-colors max-h-32 disabled:opacity-60"
               />
               <button
                 type="submit"
-                disabled={loading || !input.trim()}
+                disabled={loading || cooling || !input.trim()}
                 className="h-10 w-10 shrink-0 rounded-full bg-accent text-accent-foreground flex items-center justify-center hover:opacity-90 hover:scale-105 active:scale-95 transition-all duration-150 disabled:opacity-40 disabled:hover:scale-100"
-                aria-label="Send message"
+                aria-label={cooling ? `Wait ${cooldownSecondsLeft}s` : "Send message"}
               >
                 <Send className="h-4 w-4" />
               </button>
