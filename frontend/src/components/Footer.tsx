@@ -1,5 +1,5 @@
 import { Github, Linkedin, Mail, MapPin } from "lucide-react";
-import { profile, aiStack } from "@/data/resume";
+import { profile } from "@/data/resume";
 
 export default function Footer() {
   const year = new Date().getFullYear();
@@ -42,17 +42,6 @@ export default function Footer() {
             <Linkedin className="h-3.5 w-3.5" />
             LinkedIn
           </a>
-        </div>
-
-        <div>
-          <p className="text-xs font-mono text-muted-foreground uppercase tracking-widest mb-2">
-            Built with
-          </p>
-          <div className="flex flex-wrap gap-x-3 gap-y-1 text-muted-foreground font-mono text-xs">
-            {aiStack.map((tech) => (
-              <span key={tech}>{tech}</span>
-            ))}
-          </div>
         </div>
       </div>
 

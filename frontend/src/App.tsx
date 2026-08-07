@@ -3,7 +3,7 @@ import Hero from "@/components/Hero";
 import Experience from "@/components/Experience";
 import Certifications from "@/components/Certifications";
 import Projects from "@/components/Projects";
-import AIStack from "@/components/AIStack";
+// import AIStack from "@/components/AIStack";
 import ChatWidget from "@/components/ChatWidget";
 import ContactForm from "@/components/ContactForm";
 import Footer from "@/components/Footer";
@@ -20,7 +20,7 @@ export default function App() {
         <Experience />
         <Certifications />
         <Projects />
-        <AIStack />
+        {/* <AIStack /> */}
         <ChatWidget />
         <ContactForm />
         <Footer />
