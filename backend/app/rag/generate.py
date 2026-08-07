@@ -217,19 +217,6 @@ def _generate_azure(prompt: str, model_info) -> str:
         timeout=60,
     )
 
-    # Debug output
-    print("\n" + "=" * 80)
-    print("AZURE STATUS:", response.status_code)
-
-    try:
-        data = response.json()
-        print(data)
-    except Exception:
-        print(response.text)
-        response.raise_for_status()
-
-    print("=" * 80 + "\n")
-
     response.raise_for_status()
 
     data = response.json()
@@ -255,10 +242,3 @@ def _generate_azure(prompt: str, model_info) -> str:
     # Helpful diagnostics
     status = data.get("status")
     reason = data.get("incomplete_details", {}).get("reason")
-
-    raise RuntimeError(
-        f"Azure returned no assistant message.\n"
-        f"Status: {status}\n"
-        f"Incomplete reason: {reason}\n"
-        f"Raw output: {data.get('output')}"
-    )
