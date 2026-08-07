@@ -181,14 +181,16 @@ def _generate_gemini(prompt: str, model: str) -> str:
 
 def _generate_azure(prompt: str, model_info) -> str:
     response = requests.post(
-        f"{model_info.endpoint}/chat/completions",
+        model_info.endpoint,
         headers={
             "api-key": settings.azure_api_key,
             "Content-Type": "application/json",
         },
         json={
             "model": model_info.model,
-            "messages": [
+
+            # Responses API
+            "input": [
                 {
                     "role": "system",
                     "content": SYSTEM_PROMPT,
@@ -198,12 +200,65 @@ def _generate_azure(prompt: str, model_info) -> str:
                     "content": prompt,
                 },
             ],
-            "temperature": 0.3,
-            "max_tokens": 300,
+
+            # GPT-5 tuning
+            "reasoning": {
+                "effort": "low"
+            },
+
+            "max_output_tokens": 1000,
+
+            "text": {
+                "format": {
+                    "type": "text"
+                }
+            }
         },
-        timeout=30,
+        timeout=60,
     )
+
+    # Debug output
+    print("\n" + "=" * 80)
+    print("AZURE STATUS:", response.status_code)
+
+    try:
+        data = response.json()
+        print(data)
+    except Exception:
+        print(response.text)
+        response.raise_for_status()
+
+    print("=" * 80 + "\n")
 
     response.raise_for_status()
 
-    return response.json()["choices"][0]["message"]["content"].strip()
+    data = response.json()
+
+    # Azure returned an API error
+    if data.get("error"):
+        raise RuntimeError(data["error"])
+
+    # Find the assistant message
+    for item in data.get("output", []):
+        if item.get("type") != "message":
+            continue
+
+        for content in item.get("content", []):
+
+            if content.get("type") == "output_text":
+                return content.get("text", "").strip()
+
+            # Some Azure deployments return plain text
+            if "text" in content:
+                return content["text"].strip()
+
+    # Helpful diagnostics
+    status = data.get("status")
+    reason = data.get("incomplete_details", {}).get("reason")
+
+    raise RuntimeError(
+        f"Azure returned no assistant message.\n"
+        f"Status: {status}\n"
+        f"Incomplete reason: {reason}\n"
+        f"Raw output: {data.get('output')}"
+    )
