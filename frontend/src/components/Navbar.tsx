@@ -8,7 +8,7 @@ const LINKS = [
   { href: "#experience", label: "Experience" },
   { href: "#certifications", label: "Certifications" },
   { href: "#projects", label: "Projects" },
-  { href: "#stack", label: "Stack" },
+  // { href: "#stack", label: "Stack" },
   { href: "#honka", label: "Honka" },
   { href: "#contact", label: "Contact" },
 ];
@@ -42,7 +42,7 @@ export default function Navbar() {
 
         <div className="hidden md:flex items-center gap-2">
           <Button variant="outline" size="sm" asChild>
-            <a href="/resume.pdf" download>
+            <a href="/gumanit-resume.pdf" download>
               <Download className="h-3.5 w-3.5 mr-2" />
               Resume
             </a>
@@ -70,7 +70,7 @@ export default function Navbar() {
               {l.label}
             </a>
           ))}
-          <a href="/resume.pdf" download className="text-sm text-accent">
+          <a href="/gumanit-resume.pdf" download className="text-sm text-accent">
             Download resume
           </a>
         </nav>
