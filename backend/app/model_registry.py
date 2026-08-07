@@ -28,7 +28,7 @@ MODEL_REGISTRY = {
     "gpt-5-nano": ModelInfo(
         provider="azure",
         model="gpt-5-nano",
-        endpoint="https://example-hub-resource.openai.azure.com/openai/v1",
+        endpoint="https://example-hub-resource.services.ai.azure.com/openai/v1/responses",
     ),
 }
 
