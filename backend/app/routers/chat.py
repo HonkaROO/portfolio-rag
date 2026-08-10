@@ -117,33 +117,33 @@ def chat(req: ChatRequest, request: Request):
     check_rate_limit(request)
 
     question = validate_question(req.question)
-    
-    if is_model_query(question):
-        return ChatResponse(
-            answer=model_query_response(),
-            sources=[]
-        )
-        
-    if is_portfolio_query(question):
-        return ChatResponse(
-            answer=portfolio_query_response(),
-            sources=[]
-        )
-        
-    # Runtime model query bypass
+
+    # 1. Runtime/model information
+    # Deterministic response — does not consume an LLM call.
     model_answer = model_query_response(question)
+
     if model_answer:
         return ChatResponse(
             answer=model_answer,
             sources=[],
         )
 
+    # 2. Safe portfolio/site information
+    # Deterministic response — does not consume an LLM call.
+    if is_portfolio_query(question):
+        return ChatResponse(
+            answer=portfolio_query_response(question),
+            sources=[],
+        )
+
+    # 3. Security guardrail
     if looks_like_injection(question):
         return ChatResponse(
             answer=INJECTION_RESPONSE,
             sources=[],
         )
 
+    # 4. RAG retrieval
     try:
         chunks = retrieve_chunks(question)
     except Exception as exc:
@@ -152,12 +152,14 @@ def chat(req: ChatRequest, request: Request):
             detail="The knowledge base is temporarily unavailable.",
         ) from exc
 
+    # 5. No relevant context
     if not chunks:
         return ChatResponse(
             answer=NO_CONTEXT_ANSWER,
             sources=[],
         )
 
+    # 6. Generate using currently selected model
     try:
         answer = generate_answer(question, chunks)
     except LLMProviderError as exc:
@@ -176,8 +178,7 @@ def chat(req: ChatRequest, request: Request):
             for c in chunks
         ],
     )
-
-
+    
 def _sse(stage: str, **payload) -> str:
     """
     One Server-Sent Event frame.
@@ -193,51 +194,50 @@ def _stream_chat(question: str):
 
     yield _sse("query")
 
-    # Runtime model query bypass
+    # 1. Runtime/model information
+    # Deterministic response — no embedding, Supabase, or LLM call.
     model_answer = model_query_response(question)
+
     if model_answer:
         yield _sse(
             "respond",
-            elapsed_ms=round((time.perf_counter() - t_start) * 1000),
+            elapsed_ms=round(
+                (time.perf_counter() - t_start) * 1000
+            ),
             answer=model_answer,
             sources=[],
             model=current_model,
         )
         return
 
-    # Safe runtime/model information
-    if is_model_query(question):
-        yield _sse(
-            "respond",
-            elapsed_ms=round((time.perf_counter() - t_start) * 1000),
-            answer=model_query_response(),
-            sources=[],
-            model=current_model,
-        )
-        return
-
-    # Safe portfolio information
+    # 2. Safe portfolio/site information
+    # Deterministic response — no embedding, Supabase, or LLM call.
     if is_portfolio_query(question):
         yield _sse(
             "respond",
-            elapsed_ms=round((time.perf_counter() - t_start) * 1000),
-            answer=portfolio_query_response(),
+            elapsed_ms=round(
+                (time.perf_counter() - t_start) * 1000
+            ),
+            answer=portfolio_query_response(question),
             sources=[],
             model=current_model,
         )
         return
 
-    # Security guardrail
+    # 3. Security guardrail
     if looks_like_injection(question):
         yield _sse(
             "respond",
-            elapsed_ms=round((time.perf_counter() - t_start) * 1000),
+            elapsed_ms=round(
+                (time.perf_counter() - t_start) * 1000
+            ),
             answer=INJECTION_RESPONSE,
             sources=[],
             model=current_model,
         )
         return
 
+    # 4. RAG retrieval
     try:
         t0 = time.perf_counter()
 
@@ -260,16 +260,20 @@ def _stream_chat(question: str):
         chunk_count=len(chunks),
     )
 
+    # 5. No relevant context
     if not chunks:
         yield _sse(
             "respond",
-            elapsed_ms=round((time.perf_counter() - t_start) * 1000),
+            elapsed_ms=round(
+                (time.perf_counter() - t_start) * 1000
+            ),
             answer=NO_CONTEXT_ANSWER,
             sources=[],
             model=current_model,
         )
         return
 
+    # 6. Generate using currently selected model
     yield _sse("generate")
 
     t1 = time.perf_counter()
@@ -291,7 +295,9 @@ def _stream_chat(question: str):
 
     yield _sse(
         "respond",
-        elapsed_ms=round((time.perf_counter() - t_start) * 1000),
+        elapsed_ms=round(
+            (time.perf_counter() - t_start) * 1000
+        ),
         generate_ms=generate_ms,
         answer=answer,
         sources=[
@@ -303,7 +309,6 @@ def _stream_chat(question: str):
         ],
         model=current_model,
     )
-
 
 @router.post("/chat/stream")
 def chat_stream(req: ChatRequest, request: Request):
