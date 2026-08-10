@@ -44,6 +44,47 @@ MODEL_QUERY_KEYWORDS = [
     "who powers you",
 ]
 
+PORTFOLIO_QUERY_KEYWORDS = [
+    "what is this website",
+    "what is this site",
+    "what is this portfolio",
+    "what's this website",
+    "what's this site",
+    "what's this portfolio",
+    "what is this website about",
+    "what is this site about",
+    "what is this portfolio about",
+    "what's this website about",
+    "what's this site about",
+    "what's this portfolio about",
+    "tell me about this website",
+    "tell me about this site",
+    "tell me about this portfolio",
+    "what is this chatbot",
+    "what's this chatbot",
+    "how does this chatbot work",
+    "how does this ai work",
+    "what is this ai",
+    "who is christian",
+    "tell me about christian",
+    "about christian",
+]
+
+def is_model_query(question: str) -> bool:
+    q = question.lower().strip()
+    
+    return any(
+        keyword in q
+        for keyword in MODEL_QUERY_KEYWORDS
+    )
+    
+def is_portfolio_query(question: str) -> str:
+    q = question.lower().strip()
+    
+    return any(
+        keyword in q
+        for keyword in PORTFOLIO_QUERY_KEYWORDS
+    )
 
 def model_query_response(question: str) -> str | None:
     q = question.lower()
@@ -60,6 +101,16 @@ def model_query_response(question: str) -> str | None:
 
     return None
 
+def portfolio_query_response(question: str) -> str:
+    return (
+        "This is Christian Paul Gumanit's personal portfolio website. "
+        "It showcases his experience as a Software Engineer, his "
+        "projects, certifications, technical skills, and work involving "
+        "AI, web development, cloud technologies, and project management.\n\n"
+        "The website also features Honka, an AI-powered RAG chatbot "
+        "that can answer questions about Christian using information "
+        "from his portfolio and resume."
+    )
 
 @router.post("/chat", response_model=ChatResponse)
 def chat(req: ChatRequest, request: Request):
