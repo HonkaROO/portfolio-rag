@@ -117,7 +117,19 @@ def chat(req: ChatRequest, request: Request):
     check_rate_limit(request)
 
     question = validate_question(req.question)
-
+    
+    if is_model_query(question):
+        return ChatResponse(
+            answer=model_query_response(),
+            sources=[]
+        )
+        
+    if is_portfolio_query(question):
+        return ChatResponse(
+            answer=portfolio_query_response(),
+            sources=[]
+        )
+        
     # Runtime model query bypass
     model_answer = model_query_response(question)
     if model_answer:
@@ -193,6 +205,29 @@ def _stream_chat(question: str):
         )
         return
 
+    # Safe runtime/model information
+    if is_model_query(question):
+        yield _sse(
+            "respond",
+            elapsed_ms=round((time.perf_counter() - t_start) * 1000),
+            answer=model_query_response(),
+            sources=[],
+            model=current_model,
+        )
+        return
+
+    # Safe portfolio information
+    if is_portfolio_query(question):
+        yield _sse(
+            "respond",
+            elapsed_ms=round((time.perf_counter() - t_start) * 1000),
+            answer=portfolio_query_response(),
+            sources=[],
+            model=current_model,
+        )
+        return
+
+    # Security guardrail
     if looks_like_injection(question):
         yield _sse(
             "respond",
