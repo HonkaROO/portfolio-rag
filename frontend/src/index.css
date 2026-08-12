@@ -119,6 +119,80 @@ body {
   background: linear-gradient(to right, transparent, hsl(var(--border)), transparent);
 }
 
+/* =========================================================
+   TECHNOLOGY CONVEYOR BELT
+   ========================================================= */
+
+.technology-marquee {
+  width: 100%;
+  overflow: hidden;
+}
+
+.technology-marquee-track {
+  display: flex;
+  width: max-content;
+  gap: 0.75rem;
+
+  will-change: transform;
+
+  animation-duration: 50s;
+  animation-timing-function: linear;
+  animation-iteration-count: infinite;
+}
+
+.technology-marquee-left {
+  animation-name: technology-marquee-left;
+}
+
+.technology-marquee-right {
+  animation-name: technology-marquee-right;
+}
+
+.technology-marquee-slow {
+  animation-duration: 58s;
+}
+
+/*
+ * Pause when hovering the technology section.
+ * This makes it easier for visitors to inspect an icon.
+ */
+.technology-marquee:hover .technology-marquee-track {
+  animation-play-state: paused;
+}
+
+
+/* Move exactly half of the duplicated content */
+@keyframes technology-marquee-left {
+  from {
+    transform: translateX(0);
+  }
+
+  to {
+    transform: translateX(-50%);
+  }
+}
+
+@keyframes technology-marquee-right {
+  from {
+    transform: translateX(-50%);
+  }
+
+  to {
+    transform: translateX(0);
+  }
+}
+
+
+/*
+ * Respect users who prefer reduced motion.
+ */
+@media (prefers-reduced-motion: reduce) {
+  .technology-marquee-track {
+    animation: none;
+    transform: translateX(0);
+  }
+}
+
 @media (prefers-reduced-motion: reduce) {
   * {
     animation-duration: 0.01ms !important;

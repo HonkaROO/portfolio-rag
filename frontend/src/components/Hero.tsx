@@ -58,7 +58,6 @@ export default function Hero() {
               ) : (
                 <div
                   className="w-full aspect-[4/5] flex items-center justify-center font-display text-6xl text-accent bg-muted"
-                  title="Drop a photo at frontend/public/avatar.jpg to replace this"
                 >
                   {initials}
                 </div>
@@ -75,19 +74,6 @@ export default function Hero() {
                   {education.school} · {education.period}
                 </p>
               </div>
-            </div>
-
-            <div className="space-y-3">
-              {Object.entries(coreTech).map(([group, items]) => (
-                <div key={group} className="flex items-start gap-3">
-                  <p className="text-xs font-mono text-muted-foreground w-16 shrink-0 pt-1">{group}</p>
-                  <div className="flex flex-wrap gap-1.5">
-                    {items.map((t) => (
-                      <Badge key={t}>{t}</Badge>
-                    ))}
-                  </div>
-                </div>
-              ))}
             </div>
           </div>
         </div>

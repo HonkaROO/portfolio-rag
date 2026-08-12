@@ -54,7 +54,6 @@ export default function About() {
                   text-accent
                   shadow-xl
                 "
-                title="Drop a photo at frontend/public/avatar.jpg to replace this"
               >
                 {initials}
               </div>

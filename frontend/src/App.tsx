@@ -7,6 +7,7 @@ import Projects from "@/components/Projects";
 import ChatWidget from "@/components/ChatWidget";
 import ContactForm from "@/components/ContactForm";
 import Footer from "@/components/Footer";
+import Technologies from "@/components/Technologies"
 
 // Page order is the narrative spine: who Christian is -> why he's
 // different (experience + credentials) -> what he's built -> what he
@@ -18,6 +19,7 @@ export default function App() {
       <main>
         <Hero />
         <Experience />
+        <Technologies />
         <Certifications />
         <Projects />
         {/* <AIStack /> */}

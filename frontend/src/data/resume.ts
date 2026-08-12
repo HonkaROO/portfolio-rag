@@ -87,11 +87,60 @@ export const projects = [
 ];
 
 export const coreTech = {
-  Frontend: ["React", "TypeScript", "Tailwind"],
-  Backend: ["FastAPI", "ASP.NET Core", "Laravel"],
-  AI: ["Azure AI", "Azure AI Foundry", "RAG", "LLMs"],
-  Cloud: ["Azure", "Supabase"],
-  Database: ["PostgreSQL", "SQL Server"],
+  Frontend: [
+    "React",
+    "TypeScript",
+    "Tailwind",
+    "Angular",
+  ],
+
+  Backend: [
+    "FastAPI",
+    "Django",
+    "ASP.NET Core",
+    "Laravel",
+  ],
+
+  AI: [
+    "Microsoft Foundry",
+    "Lovable",
+    "ChatGPT",
+    "Claude AI",
+    "Copilot",
+    "Gemini",
+  ],
+
+  Cloud: [
+    "Azure",
+    "Render",
+    "Docker",
+  ],
+
+  Database: [
+    "Supabase",
+    "PostgreSQL",
+    "SQL Server",
+    "MongoDB",
+    "MySQL",
+  ],
+
+  Design: [
+    "Figma",
+    "Canva",
+    "Miro",
+  ],
+
+  Management: [
+    "Azure DevOps",
+    "Asana",
+    "Google Workspace",
+  ],
+
+  Others: [
+    "Resend",
+    "WordPress",
+    "n8n",
+  ],
 };
 
 export const skills = {
