@@ -40,7 +40,6 @@ export default function Hero() {
                 <a href="#contact">Get in touch</a>
               </Button>
             </div>
-
             <SocialLinks />
           </div>
 
