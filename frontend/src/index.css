@@ -120,6 +120,24 @@ body {
 }
 
 /* =========================================================
+   THEME VIEW TRANSITION
+   ========================================================= */
+
+::view-transition-old(root),
+::view-transition-new(root) {
+  animation: none;
+  mix-blend-mode: normal;
+}
+
+::view-transition-new(root) {
+  z-index: 9999;
+}
+
+::view-transition-old(root) {
+  z-index: 1;
+}
+
+/* =========================================================
    TECHNOLOGY CONVEYOR BELT
    ========================================================= */
 
@@ -160,7 +178,6 @@ body {
   animation-play-state: paused;
 }
 
-
 /* Move exactly half of the duplicated content */
 @keyframes technology-marquee-left {
   from {
@@ -182,7 +199,6 @@ body {
   }
 }
 
-
 /*
  * Respect users who prefer reduced motion.
  */
@@ -199,4 +215,8 @@ body {
     animation-iteration-count: 1 !important;
     transition-duration: 0.01ms !important;
   }
+}
+  ::view-transition-old(root), ::view-transition-new(root) {
+    animation: none;
+    mix-blend-mode: normal;
 }
