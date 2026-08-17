@@ -66,7 +66,7 @@ export default function About() {
             </h3>
 
             <p className="text-sm text-muted-foreground mt-1">
-              Software Engineer • Azure AI Engineer
+              Software Engineer • AI Engineer & Solutions Architect
             </p>
           </div>
         </div>
