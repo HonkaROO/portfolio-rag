@@ -158,6 +158,13 @@ export const skills = {
 
 export const certifications = [
   {
+    name: "Agentic AI Business Solutions Architect",
+    issuer: "Microsoft",
+    date: "August 2026",
+    credentialId: "AB-100",
+    image: "/microsoft_sa.png",
+  },
+  {
     name: "Azure AI Engineer Associate",
     issuer: "Microsoft",
     date: "March 2026",

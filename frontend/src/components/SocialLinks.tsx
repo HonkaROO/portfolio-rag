@@ -1,17 +1,48 @@
-import { Github, Linkedin, Mail } from "lucide-react";
+import { useState, useEffect } from "react";
+import { GitHubDark, GitHubLight, LinkedIn, Gmail } from "developer-icons";
 import { socialLinks } from "@/data/resume";
 
-const ICONS = { email: Mail, github: Github, linkedin: Linkedin } as const;
+const ICONS = { email: Gmail, github: GitHubDark, linkedin: LinkedIn } as const;
+
 
 export default function SocialLinks() {
+  const [light, setLight] = useState(false);
+
+  useEffect(() => {
+    const updateTheme = () => {
+      setLight(document.documentElement.classList.contains("light"));
+    };
+
+    // Set initial theme
+    updateTheme();
+
+    // Watch for ThemeToggle changes
+    const observer = new MutationObserver(updateTheme);
+
+    observer.observe(document.documentElement, {
+      attributes: true,
+      attributeFilter: ["class"],
+    });
+
+    return () => observer.disconnect();
+  }, []);
+
+  const ICONS = {
+    email: Gmail,
+    github: light ? GitHubDark : GitHubLight,
+    linkedin: LinkedIn,
+  } as const;
+
   return (
     <div>
       <p className="text-xs font-mono text-muted-foreground uppercase tracking-widest mb-3">
         Find me online
       </p>
+
       <div className="flex gap-2">
         {socialLinks.map((s) => {
           const Icon = ICONS[s.key as keyof typeof ICONS];
+
           return (
             <a
               key={s.key}
