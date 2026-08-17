@@ -1,143 +1,426 @@
 import { useState } from "react";
-import { projects, profile } from "@/data/resume";
-import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
-import Reveal from "@/components/Reveal";
-import ReactMarkdown from "react-markdown";
-import { ArrowRight, Github } from "lucide-react";
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from "@/components/ui/dialog";
-import { ScrollArea } from "@/components/ui/scroll-area";
-import ProjectLightbox from "@/components/ProjectLightbox";
-import ProjectGallery from "@/components/ProjectGallery";
+import { AnimatePresence, motion } from "motion/react";
+import { X, ExternalLink } from "lucide-react";
+import { projects } from "@/data/resume";
 import SectionKicker from "@/components/SectionKicker";
+import TechnologyIcon from "@/components/TechnologyIcon";
 
-type LightboxState = { images: string[]; index: number } | null;
-
-// All of resume.ts's projects are already "featured" - show every one
-// rather than arbitrarily hiding the last.
-const FEATURED = projects;
+type Project = (typeof projects)[number];
 
 export default function Projects() {
-  const [lightbox, setLightbox] = useState<LightboxState>(null);
+  const [selectedProject, setSelectedProject] = useState<Project | null>(null);
 
   return (
-    <section id="projects" className="scroll-anchor border-b border-border">
-      <div className="container py-14 lg:py-16">
-        <SectionKicker index="04" question="What he's built" />
-        <div className="flex items-end justify-between mb-10 gap-4 flex-wrap">
-          <h2 className="font-display text-2xl font-bold">Featured Projects</h2>
-          <a
-            href={profile.github}
-            target="_blank"
-            rel="noreferrer"
-            className="inline-flex items-center gap-1.5 text-sm text-muted-foreground hover:text-accent transition-colors"
-          >
-            <Github className="h-4 w-4" />
-            View all projects
-            <ArrowRight className="h-3.5 w-3.5" />
-          </a>
+    <section
+      id="projects"
+      className="scroll-anchor border-b border-border"
+    >
+      <div className="container py-20">
+        <SectionKicker
+          index="03"
+          question="What has Christian built"
+        />
+
+        <div className="mb-10">
+          <h2 className="font-display text-3xl md:text-4xl font-bold">
+            Projects
+          </h2>
+
+          <p className="mt-3 text-muted-foreground max-w-2xl">
+            A selection of systems, AI applications, and software projects
+            I've worked on across engineering and project management.
+          </p>
         </div>
-        <div className="grid md:grid-cols-2 gap-6">
-          {FEATURED.map((p, i) => {
-            const hasImages = p.images && p.images.length > 0;
 
-            return (
-              <Reveal key={p.name} delay={i * 100}>
-                <Dialog>
-                  <DialogTrigger asChild>
-                    <Card className="cursor-pointer hover:border-accent hover:shadow-[0_0_24px_-6px_hsl(var(--accent)/0.35)] hover:-translate-y-1 transition-all duration-300 h-full flex flex-col group">
-                      <CardHeader>
-                        <CardTitle className="group-hover:text-accent transition-colors">
-                          {p.name}
-                        </CardTitle>
-                        <CardDescription>{p.role}</CardDescription>
-                      </CardHeader>
-                      <CardContent className="flex-1 flex flex-col">
-                        <ul className="space-y-2 text-sm text-muted-foreground mb-4 flex-1">
-                          {p.bullets.map((b, i) => (
-                            <li key={i}>{b}</li>
-                          ))}
-                        </ul>
-                        <div className="flex flex-wrap gap-2">
-                          {p.stack.map((s) => (
-                            <Badge key={s} variant="accent">
-                              {s}
-                            </Badge>
-                          ))}
-                        </div>
-                      </CardContent>
-                    </Card>
-                  </DialogTrigger>
+        {/* PROJECT GRID */}
+        <div className="grid md:grid-cols-2 gap-5">
+          {projects.map((project, index) => (
+            <motion.button
+              key={project.name}
+              layoutId={`project-${project.name}`}
+              onClick={() => setSelectedProject(project)}
+              className="
+                group
+                relative
+                text-left
+                overflow-hidden
+                rounded-2xl
+                border border-border
+                bg-card
+                hover:border-accent/50
+                transition-colors
+                focus:outline-none
+                focus-visible:ring-2
+                focus-visible:ring-accent
+              "
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true, amount: 0.2 }}
+              transition={{
+                duration: 0.5,
+                delay: index * 0.08,
+              }}
+            >
+              {/* IMAGE */}
+              <motion.div
+                layoutId={`project-image-${project.name}`}
+                className="relative aspect-[16/9] overflow-hidden"
+              >
+                <img
+                  src={project.images[0]}
+                  alt={project.name}
+                  className="
+                    h-full
+                    w-full
+                    object-cover
+                    transition-transform
+                    duration-500
+                    group-hover:scale-105
+                  "
+                />
 
-                  <DialogContent className="max-w-5xl max-h-[90vh] flex flex-col gap-0 p-0 overflow-hidden">
-                    <DialogHeader className="p-6 border-b border-border bg-muted/30 shrink-0">
-                      <DialogTitle className="text-2xl font-display">{p.name}</DialogTitle>
-                      <p className="text-sm text-muted-foreground">{p.role}</p>
-                    </DialogHeader>
+                {/* Image overlay */}
+                <div className="
+                  absolute
+                  inset-0
+                  bg-gradient-to-t
+                  from-black/70
+                  via-black/10
+                  to-transparent
+                " />
 
-                    <ScrollArea className="flex-1">
-                      <div className="p-6">
-                        {/* Browser-chrome carousel with thumbnails - click the main
-                            image to zoom into the full-resolution lightbox. */}
-                        {hasImages && (
-                          <ProjectGallery
-                            name={p.name}
-                            images={p.images}
-                            onZoom={(index) => setLightbox({ images: p.images, index })}
-                          />
-                        )}
+                {/* Project number */}
+                <span className="
+                  absolute
+                  top-4
+                  left-4
+                  font-mono
+                  text-xs
+                  text-white/70
+                ">
+                  {String(index + 1).padStart(2, "0")}
+                </span>
 
-                        <div className="flex flex-col max-w-2xl mx-auto">
-                          <ReactMarkdown
-                            components={{
-                              h3: ({ children }) => (
-                                <h3 className="text-lg font-bold mt-2 mb-3 font-display text-foreground">
-                                  {children}
-                                </h3>
-                              ),
-                              p: ({ children }) => (
-                                <p className="mb-5 text-muted-foreground leading-relaxed text-sm">
-                                  {children}
-                                </p>
-                              ),
-                              ul: ({ children }) => (
-                                <ul className="list-disc pl-5 mb-5 space-y-2 text-muted-foreground text-sm">
-                                  {children}
-                                </ul>
-                              ),
-                              li: ({ children }) => <li>{children}</li>,
-                              strong: ({ children }) => (
-                                <strong className="font-semibold text-foreground">{children}</strong>
-                              ),
-                            }}
-                          >
-                            {p.bullets.map((b) => `- ${b}`).join("\n")}
-                          </ReactMarkdown>
-                        </div>
-                      </div>
-                    </ScrollArea>
-                  </DialogContent>
-                </Dialog>
-              </Reveal>
-            );
-          })}
+                {/* Role */}
+                <span className="
+                  absolute
+                  top-4
+                  right-4
+                  rounded-full
+                  bg-black/40
+                  backdrop-blur-sm
+                  px-3
+                  py-1
+                  text-xs
+                  text-white
+                  border
+                  border-white/10
+                ">
+                  {project.role}
+                </span>
+
+                {/* Title */}
+                <div className="absolute bottom-5 left-5 right-5">
+                  <motion.h3
+                    layoutId={`project-title-${project.name}`}
+                    className="
+                      font-display
+                      text-xl
+                      md:text-2xl
+                      font-bold
+                      text-white
+                    "
+                  >
+                    {project.name}
+                  </motion.h3>
+                </div>
+              </motion.div>
+
+              {/* CARD CONTENT */}
+              <div className="p-5">
+                <div className="flex flex-wrap gap-1.5 mb-4">
+                  {project.stack.map((tech) => (
+                    <span
+                      key={tech}
+                      className="
+                        flex
+                        items-center
+                        gap-1.5
+                        rounded-md
+                        border
+                        border-border
+                        bg-background
+                        px-2
+                        py-1
+                        text-xs
+                        text-muted-foreground
+                      "
+                    >
+                      <TechnologyIcon
+                        name={tech}
+                        size={14}
+                      />
+                      {tech}
+                    </span>
+                  ))}
+                </div>
+
+                <p className="
+                  text-sm
+                  text-muted-foreground
+                  line-clamp-2
+                ">
+                  {project.bullets[0]}
+                </p>
+
+                <div className="
+                  mt-4
+                  text-xs
+                  font-medium
+                  text-accent
+                  opacity-0
+                  translate-y-1
+                  group-hover:opacity-100
+                  group-hover:translate-y-0
+                  transition-all
+                ">
+                  View project →
+                </div>
+              </div>
+            </motion.button>
+          ))}
         </div>
       </div>
 
-      {lightbox && (
-        <ProjectLightbox
-          images={lightbox.images}
-          index={lightbox.index}
-          onClose={() => setLightbox(null)}
-          onNavigate={(index) => setLightbox({ images: lightbox.images, index })}
-        />
-      )}
+      {/* EXPANDED PROJECT */}
+      <AnimatePresence>
+        {selectedProject && (
+          <>
+            {/* BACKDROP */}
+            <motion.div
+              className="
+                fixed
+                inset-0
+                z-[90]
+                bg-black/70
+                backdrop-blur-sm
+              "
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              onClick={() => setSelectedProject(null)}
+            />
+
+            {/* MODAL */}
+            <div
+              className="
+                fixed
+                inset-0
+                z-[100]
+                flex
+                items-center
+                justify-center
+                p-4
+                md:p-8
+                pointer-events-none
+              "
+            >
+              <motion.div
+                layoutId={`project-${selectedProject.name}`}
+                className="
+                  pointer-events-auto
+                  relative
+                  w-full
+                  max-w-4xl
+                  max-h-[90vh]
+                  overflow-y-auto
+                  rounded-2xl
+                  border
+                  border-border
+                  bg-card
+                  shadow-2xl
+                "
+              >
+                {/* CLOSE */}
+                <button
+                  onClick={() => setSelectedProject(null)}
+                  aria-label="Close project"
+                  className="
+                    absolute
+                    z-20
+                    right-4
+                    top-4
+                    flex
+                    h-9
+                    w-9
+                    items-center
+                    justify-center
+                    rounded-full
+                    bg-black/50
+                    text-white
+                    backdrop-blur-sm
+                    hover:bg-black/70
+                    transition-colors
+                  "
+                >
+                  <X className="h-4 w-4" />
+                </button>
+
+                {/* HERO IMAGE */}
+                <motion.div
+                  layoutId={`project-image-${selectedProject.name}`}
+                  className="
+                    relative
+                    aspect-[16/9]
+                    overflow-hidden
+                  "
+                >
+                  <img
+                    src={selectedProject.images[0]}
+                    alt={selectedProject.name}
+                    className="
+                      h-full
+                      w-full
+                      object-cover
+                    "
+                  />
+
+                  <div className="
+                    absolute
+                    inset-0
+                    bg-gradient-to-t
+                    from-black/80
+                    via-black/10
+                    to-transparent
+                  " />
+
+                  <div className="
+                    absolute
+                    bottom-6
+                    left-6
+                    right-6
+                  ">
+                    <span className="
+                      text-xs
+                      font-mono
+                      text-white/70
+                    ">
+                      {selectedProject.role}
+                    </span>
+
+                    <motion.h3
+                      layoutId={`project-title-${selectedProject.name}`}
+                      className="
+                        mt-1
+                        font-display
+                        text-2xl
+                        md:text-4xl
+                        font-bold
+                        text-white
+                      "
+                    >
+                      {selectedProject.name}
+                    </motion.h3>
+                  </div>
+                </motion.div>
+
+                {/* DETAILS */}
+                <div className="p-6 md:p-8">
+                  {/* STACK */}
+                  <div className="flex flex-wrap gap-2 mb-7">
+                    {selectedProject.stack.map((tech) => (
+                      <span
+                        key={tech}
+                        className="
+                          flex
+                          items-center
+                          gap-2
+                          rounded-md
+                          border
+                          border-border
+                          bg-background
+                          px-3
+                          py-1.5
+                          text-xs
+                          text-muted-foreground
+                        "
+                      >
+                        <TechnologyIcon
+                          name={tech}
+                          size={16}
+                        />
+                        {tech}
+                      </span>
+                    ))}
+                  </div>
+
+                  {/* DESCRIPTION */}
+                  <div className="space-y-4">
+                    {selectedProject.bullets.map((bullet) => (
+                      <p
+                        key={bullet}
+                        className="
+                          text-sm
+                          md:text-base
+                          leading-relaxed
+                          text-muted-foreground
+                        "
+                      >
+                        {bullet}
+                      </p>
+                    ))}
+                  </div>
+
+                  {/* PROJECT GALLERY */}
+                  {selectedProject.images.length > 1 && (
+                    <div className="mt-8">
+                      <h4 className="
+                        mb-4
+                        text-sm
+                        font-medium
+                      ">
+                        Project screenshots
+                      </h4>
+
+                      <div className="grid sm:grid-cols-2 gap-4">
+                        {selectedProject.images
+                          .slice(1)
+                          .map((image, index) => (
+                            <motion.img
+                              key={image}
+                              src={image}
+                              alt={`${selectedProject.name} screenshot ${
+                                index + 2
+                              }`}
+                              className="
+                                w-full
+                                rounded-xl
+                                border
+                                border-border
+                                object-cover
+                              "
+                              initial={{
+                                opacity: 0,
+                                y: 15,
+                              }}
+                              animate={{
+                                opacity: 1,
+                                y: 0,
+                              }}
+                              transition={{
+                                delay: 0.15 + index * 0.08,
+                              }}
+                            />
+                          ))}
+                      </div>
+                    </div>
+                  )}
+                </div>
+              </motion.div>
+            </div>
+          </>
+        )}
+      </AnimatePresence>
     </section>
   );
 }
