@@ -49,7 +49,7 @@ export default function Hero() {
             <div className="rounded-2xl border border-border bg-card overflow-hidden mb-5">
               {!photoFailed ? (
                 <img
-                  src="/avatar.jpg"
+                  src="/avatar/avatar.jpg"
                   alt={profile.name}
                   onError={() => setPhotoFailed(true)}
                   className="w-full aspect-[4/5] object-cover object-top"

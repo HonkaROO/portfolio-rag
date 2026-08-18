@@ -52,7 +52,7 @@ export const projects = [
       "Designed a full-stack onboarding platform with an integrated RAG-powered AI chatbot for new hires.",
       "Streamlined HR workflows with automated conversational assistance and personalized onboarding.",
     ],
-    images: ["/nox_dashboard.png", "/nox_chatbot.png", "/nox_gov.png"],
+    images: ["/projects/nox/nox_login.png", "/projects/nox/nox_dashboard.png", "/projects/nox/nox_docs.png", "/projects/nox/nox_reports.png", "/projects/nox/nox_supad.png"],
   },
   {
     name: "N-PAX File Management (Trackquire)",
@@ -62,7 +62,7 @@ export const projects = [
       "Spearheaded a secure file management platform for company document archiving and retrieval.",
       "Directed database schema design and Entity Framework Core implementation while managing task assignments.",
     ],
-    images: ["/landing_page_trackquire.png", "/login_trackquire.png"],
+    images: ["/projects/trackquire/trackquire_login.png", "/projects/trackquire/trackquire_landing.png", "/projects/trackquire/trackquire_form.png", "/projects/trackquire/trackquire_reports.png", "/projects/trackquire/trackquire_logs.png"],
   },
   {
     name: "EnrollME (Internship)",
@@ -72,7 +72,7 @@ export const projects = [
       "Architected the backend for an education enrollment system with secure parent and admin portals.",
       "Implemented authentication/authorization flows, optimized performance with DevOps and containerization.",
     ],
-    images: ["/enrollme_dashboard.png", "/enrollme_login.png"],
+    images: ["/projects/enrollme/enrollme_login.png", "/projects/enrollme/enrollme_dashboard.png", "/projects/enrollme/enrollme_students.png", "/projects/enrollme/enrollme_report.png", "/projects/enrollme/enrollme_info.png"],
   },
   {
     name: "SCSHelpDesk (Jumpstart Program)",
@@ -82,7 +82,7 @@ export const projects = [
       "Led a team building a web-based ticketing system across the full sprint lifecycle.",
       "Managed task distribution and authored documentation for the core knowledge-base functionality.",
     ],
-    images: ["/alliance_landing.png", "/alliance_login.png"],
+    images: ["/projects/scs/scs_landing.png", "/projects/scs/scs_login.png", "/projects/scs/scs_settings.png", "/projects/scs/scs_tickets.png", "/projects/scs/scs_user.png"],
   },
 ];
 

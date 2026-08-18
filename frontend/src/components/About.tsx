@@ -21,7 +21,7 @@ export default function About() {
 
             {!photoFailed ? (
               <img
-                src="/avatar.jpg"
+                src="/avatar/avatar.jpg"
                 alt={profile.name}
                 onError={() => setPhotoFailed(true)}
                 className="
