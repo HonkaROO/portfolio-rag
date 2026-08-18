@@ -18,8 +18,8 @@ export default function App() {
       <Navbar />
       <main>
         <Hero />
-        <Experience />
         <Technologies />
+        <Experience />
         <Certifications />
         <Projects />
         {/* <AIStack /> */}
