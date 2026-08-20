@@ -13,7 +13,7 @@ export default function Experience() {
   return (
     <section id="experience" className="scroll-anchor section-fade-top border-b border-border section-alt">
       <div className="container py-14 lg:py-16">
-        <SectionKicker index="02" question="Proven Experience and Exposure" />
+        <SectionKicker index="02" question="Proven Experience & Exposure" />
         <h2 className="font-display text-2xl font-bold mb-10">A track record, not just a stack</h2>
 
         <div className="space-y-8 max-w-4xl">
