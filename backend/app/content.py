@@ -3,8 +3,9 @@
 # When you update your resume, update this list and re-run ingest.py.
 
 CHUNKS: list[str] = [
-    "Christian Paul Gumanit is a Software Engineer based in Lapu-lapu City, Cebu, "
-    "and a Certified Microsoft Azure AI Engineer Associate and Google Certified Project Manager.",
+    "Christian Paul Gumanit is a Software Engineer based in Lapu-lapu City, Cebu, Philippines "
+    "and a Certified Microsoft Agentic AI Business Solutions Architect, Azure AI Engineer Associate, "
+    "and a Google Certified Project Manager. ",
 
     "As Software Engineer at N-PAX Cebu Corporation (Aug 2025 - Present), Christian architected a "
     "full-stack Onboarding System featuring a RAG-powered AI chatbot to automate information "
@@ -49,9 +50,10 @@ CHUNKS: list[str] = [
     "Christian's project management skills include project planning, stakeholder management, "
     "risk management, implementation oversight, Agile methodologies, and project delivery.",
 
-    "Christian holds these certifications: Microsoft Certified Azure AI Engineer Associate "
-    "(March 2026), Google Project Management Professional (December 2025), and AWS Academy "
-    "Graduate in Cloud Architecting (May 2025).",
+    "Christian holds these certifications: Microsoft Certified: Agentic AI Business Solutions Architect (August 2026), "
+    "Microsoft Certified: Azure AI Engineer Associate (March 2026), Google Project Management Professional (December 2025), "
+    "AWS Academy Graduate in Cloud Architecting (May 2025), AWS Academy in Cloud Foundations (April 2025), "
+    "and React - The Complete Guide 2024 from Udemy (January 2025).",
 
     "Christian holds a Bachelor of Science in Computer Science from the University of "
     "San Jose-Recoletos (June 2021 - May 2025).",
