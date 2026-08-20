@@ -1,24 +1,103 @@
-"""
-Run once (and again whenever content.py changes) to (re)populate the
-`documents` table in Supabase with fresh embeddings.
-
-    cd backend
-    python -m app.ingest
-"""
-
-from app.db import get_client
-from app.rag.embed import embed_text
-from app.content import CHUNKS
+from .content import CHUNKS
+from .rag.retrieve import (
+    add_documents,
+    clear_collection,
+    get_document_count,
+)
 
 
-def run():
-    client = get_client()
-    client.table("documents").delete().neq("id", 0).execute()  # clear old rows
+def main() -> None:
 
-    rows = [{"content": chunk, "embedding": embed_text(chunk)} for chunk in CHUNKS]
-    client.table("documents").insert(rows).execute()
-    print(f"Ingested {len(rows)} chunks into Supabase.")
+    print()
+    print("===================================")
+    print("Honka ChromaDB Ingestion")
+    print("===================================")
+    print()
+
+    # -----------------------------------------------------
+    # Validate content
+    # -----------------------------------------------------
+
+    if not CHUNKS:
+        print(
+            "No chunks found in app/content.py"
+        )
+        return
+
+    print(
+        f"Loaded {len(CHUNKS)} predefined chunks."
+    )
+
+    # -----------------------------------------------------
+    # Clear existing collection
+    # -----------------------------------------------------
+
+    print()
+    print(
+        "Clearing existing ChromaDB collection..."
+    )
+
+    clear_collection()
+
+    print(
+        "Collection cleared."
+    )
+
+    # -----------------------------------------------------
+    # IDs
+    # -----------------------------------------------------
+
+    ids = [
+        f"resume_chunk_{index}"
+        for index in range(len(CHUNKS))
+    ]
+
+    # -----------------------------------------------------
+    # Metadata
+    # -----------------------------------------------------
+
+    metadatas = [
+        {
+            "source": "resume",
+            "chunk_index": index,
+        }
+        for index in range(len(CHUNKS))
+    ]
+
+    # -----------------------------------------------------
+    # Insert
+    # -----------------------------------------------------
+
+    print()
+    print(
+        "Generating embeddings and storing documents..."
+    )
+
+    add_documents(
+        documents=CHUNKS,
+        ids=ids,
+        metadatas=metadatas,
+    )
+
+    # -----------------------------------------------------
+    # Verify
+    # -----------------------------------------------------
+
+    count = get_document_count()
+
+    print()
+    print("===================================")
+    print("Ingestion complete.")
+    print("===================================")
+    print()
+    print(
+        f"Source chunks : {len(CHUNKS)}"
+    )
+    print(
+        f"ChromaDB docs : {count}"
+    )
+    print()
 
 
 if __name__ == "__main__":
-    run()
+    main()

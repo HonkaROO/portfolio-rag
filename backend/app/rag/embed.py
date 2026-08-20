@@ -1,43 +1,68 @@
-from functools import lru_cache
-import requests
-
-from app.config import settings
-from app.model_registry import EMBEDDING_REGISTRY
+from sentence_transformers import SentenceTransformer
 
 
-@lru_cache
-def get_model():
-    # For now we only support Azure embeddings
-    return EMBEDDING_REGISTRY["azure"]
+# =========================================================
+# Embedding model
+# =========================================================
+
+MODEL_NAME = "all-MiniLM-L6-v2"
 
 
-@lru_cache
-def get_headers():
-    return {
-        "api-key": settings.azure_api_key,
-        "Content-Type": "application/json",
-    }
+_model = SentenceTransformer(
+    MODEL_NAME
+)
 
+
+# =========================================================
+# Single text embedding
+# =========================================================
 
 def embed_text(text: str) -> list[float]:
     """
-    Generate embeddings using the configured embedding provider.
+    Convert a single piece of text into an embedding vector.
     """
 
-    model_info = get_model()
-
-    response = requests.post(
-        model_info.endpoint,
-        headers=get_headers(),
-        json={
-            "model": model_info.model,
-            "input": text,
-        },
-        timeout=30,
+    embedding = _model.encode(
+        text,
+        normalize_embeddings=True,
     )
 
-    response.raise_for_status()
+    return embedding.tolist()
 
-    body = response.json()
 
-    return body["data"][0]["embedding"]
+# =========================================================
+# Multiple text embeddings
+# =========================================================
+
+def embed_documents(
+    documents: list[str],
+) -> list[list[float]]:
+    """
+    Convert multiple documents into embedding vectors.
+    """
+
+    if not documents:
+        return []
+
+    embeddings = _model.encode(
+        documents,
+        normalize_embeddings=True,
+    )
+
+    return embeddings.tolist()
+
+
+# =========================================================
+# Query embedding
+# =========================================================
+
+def embed_query(
+    query: str,
+) -> list[float]:
+    """
+    Convert a user query into an embedding vector.
+
+    Uses the same model as document embeddings.
+    """
+
+    return embed_text(query)

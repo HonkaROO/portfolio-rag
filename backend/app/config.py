@@ -1,29 +1,66 @@
+from functools import lru_cache
+
 from pydantic_settings import BaseSettings, SettingsConfigDict
+
+
 class Settings(BaseSettings):
+    # ==========================================
+    # Application
+    # ==========================================
+
+    app_name: str = "Honka API"
+    environment: str = "development"
+
+    # ==========================================
+    # ChromaDB
+    # ==========================================
+
+    chroma_path: str = "./chroma_data"
+    chroma_collection: str = "honka_knowledge"
+
+    # ==========================================
+    # Embeddings
+    # ==========================================
+
+    embedding_model: str = "all-MiniLM-L6-v2"
+
+    # ==========================================
+    # LLM
+    # ==========================================
+
+    llm_provider: str = "groq"
+    llm_model: str = ""
+
+    # ==========================================
+    # Groq
+    # ==========================================
+
+    groq_api_key: str | None = None
+
+    # ==========================================
+    # Gemini
+    # ==========================================
+
+    gemini_api_key: str | None = None
+
+    # ==========================================
+    # Azure OpenAI
+    # ==========================================
+
+    azure_openai_api_key: str | None = None
+    azure_openai_endpoint: str | None = None
+
     model_config = SettingsConfigDict(
         env_file=".env",
+        env_file_encoding="utf-8",
+        case_sensitive=False,
         extra="ignore",
     )
 
-    supabase_url: str
-    supabase_key: str
 
-    llm_model: str = "llama-3.1-8b-instant"
+@lru_cache
+def get_settings() -> Settings:
+    return Settings()
 
-    groq_api_key: str = ""
-    gemini_api_key: str = ""
-    azure_api_key: str = ""
 
-    allowed_origins: str = "http://localhost:5173"
-
-    embedding_model: str = "all-MiniLM-L6-v2"
-    match_count: int = 4
-
-    min_similarity: float = 0.35
-
-    rate_limit_max_requests: int = 10
-    rate_limit_window_seconds: int = 60
-
-    max_question_length: int = 500
-
-settings = Settings()
+settings = get_settings()

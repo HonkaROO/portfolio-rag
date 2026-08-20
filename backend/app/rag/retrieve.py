@@ -1,33 +1,172 @@
-from app.db import get_client
-from app.rag.embed import embed_text
-from app.config import settings
+from typing import Any
+
+from ..db import get_collection
+from .embed import embed_documents, embed_query
 
 
-def retrieve_chunks(question: str) -> list[dict]:
-    """Embed the question and run cosine-similarity search via the
-    match_documents() Postgres function (see supabase/schema.sql), then
-    drop the result entirely if even the best match isn't actually
-    relevant - this is what lets the caller skip the LLM call rather than
-    generating an answer that isn't grounded in real context."""
-    query_embedding = embed_text(question)
-    client = get_client()
-    result = client.rpc(
-        "match_documents",
-        {
-            "query_embedding": query_embedding,
-            "match_count": settings.match_count,
-        },
-    ).execute()
-    chunks = result.data or []
-    return _filter_low_confidence(chunks)
+# =========================================================
+# Collection
+# =========================================================
+
+def get_rag_collection():
+    """
+    Return the ChromaDB collection used by Honka.
+    """
+
+    return get_collection()
 
 
-def _filter_low_confidence(chunks: list[dict]) -> list[dict]:
-    if not chunks:
+# =========================================================
+# Add documents
+# =========================================================
+
+def add_documents(
+    documents: list[str],
+    ids: list[str],
+    metadatas: list[dict[str, Any]] | None = None,
+) -> None:
+    """
+    Add documents and their embeddings to ChromaDB.
+    """
+
+    if not documents:
+        return
+
+    if len(documents) != len(ids):
+        raise ValueError(
+            "documents and ids must have the same length"
+        )
+
+    if metadatas is not None and len(metadatas) != len(documents):
+        raise ValueError(
+            "documents and metadatas must have the same length"
+        )
+
+    collection = get_rag_collection()
+
+    embeddings = embed_documents(
+        documents
+    )
+
+    collection.add(
+        documents=documents,
+        embeddings=embeddings,
+        ids=ids,
+        metadatas=metadatas,
+    )
+
+
+# =========================================================
+# Clear collection
+# =========================================================
+
+def clear_collection() -> None:
+    """
+    Remove all existing documents from the collection.
+    """
+
+    collection = get_rag_collection()
+
+    existing = collection.get()
+
+    ids = existing.get("ids", [])
+
+    if ids:
+        collection.delete(
+            ids=ids
+        )
+
+
+# =========================================================
+# Collection count
+# =========================================================
+
+def get_document_count() -> int:
+    """
+    Return the number of documents currently stored.
+    """
+
+    collection = get_rag_collection()
+
+    return collection.count()
+
+
+# =========================================================
+# Similarity search
+# =========================================================
+
+def retrieve_chunks(
+    query: str,
+    top_k: int = 5,
+) -> list[dict[str, Any]]:
+    """
+    Retrieve the most relevant knowledge chunks from ChromaDB.
+    """
+
+    query = query.strip()
+
+    if not query:
         return []
-    top_score = chunks[0].get("similarity", 0)
-    if top_score < settings.min_similarity:
-        # Best match still isn't close enough to be useful - treat this
-        # exactly like "no results" so the router skips generation.
+
+    if top_k <= 0:
         return []
+
+    collection = get_rag_collection()
+
+    if collection.count() == 0:
+        return []
+
+    query_embedding = embed_query(
+        query
+    )
+
+    results = collection.query(
+        query_embeddings=[query_embedding],
+        n_results=min(
+            top_k,
+            collection.count(),
+        ),
+        include=[
+            "documents",
+            "metadatas",
+            "distances",
+        ],
+    )
+
+    documents = results.get("documents", [[]])[0]
+    metadatas = results.get("metadatas", [[]])[0]
+    distances = results.get("distances", [[]])[0]
+    ids = results.get("ids", [[]])[0]
+
+    chunks: list[dict[str, Any]] = []
+
+    for index, document in enumerate(documents):
+
+        metadata = (
+            metadatas[index]
+            if index < len(metadatas)
+            else {}
+        )
+
+        distance = (
+            distances[index]
+            if index < len(distances)
+            else None
+        )
+
+        document_id = (
+            ids[index]
+            if index < len(ids)
+            else None
+        )
+
+        chunks.append(
+            {
+                "id": document_id,
+                "content": document,
+                "metadata": metadata,
+                "distance": distance,
+            }
+        )
+
     return chunks
