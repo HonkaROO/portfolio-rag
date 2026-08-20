@@ -9,7 +9,16 @@ export const profile = {
     "Strategic and results-oriented Software Engineer and Certified Microsoft Azure AI Engineer Associate with a specialized focus on AI development and web application architecture. Proven expertise architecting production-ready systems with ASP.NET Core, Laravel, and FastAPI. Google Certified Project Manager with a track record of leading Agile teams through the full project lifecycle.",
 };
 
-export const experience = [
+export interface Job {
+  role: string;
+  company: string;
+  period: string;
+  bullets: string[];
+  proof?: string[];        // image paths only
+  proofTitles?: string[];  // optional, parallel to proof[] — shown as captions in the lightbox
+}
+
+export const experience: Job[] = [
   {
     role: "Software Engineer",
     company: "N-PAX Cebu Corporation, Inc.",
@@ -20,6 +29,8 @@ export const experience = [
       "Managed an Azure-focused technical team's growth and training, establishing a certification roadmap toward Microsoft Solutions Partner status.",
       "Served as Project Manager for a cross-functional team building a file management platform, from task assignment to technical documentation.",
     ],
+    // proof: ["/experience/npax-azure-cert.jpg"],
+    // proofTitles: ["Microsoft Certified: Azure AI Engineer Associate"],
   },
   {
     role: "Backend Developer",
@@ -30,6 +41,8 @@ export const experience = [
       "Handled user authentication for the enrollment portal system, covering use cases, API usage, and test functionality.",
       "Underwent weekly technical assessments during development to reinforce knowledge retention.",
     ],
+    proof: ["/experience/xpertis.jpg"],
+    proofTitles: ["Xpertis Solutions Certificate of Completion"],
   },
   {
     role: "Project Manager",
@@ -40,6 +53,20 @@ export const experience = [
       "Facilitated task distribution and coordinated schedules for seamless team execution.",
       "Created technical documentation and helped develop core application functionality.",
     ],
+    proof: ["/experience/alliance.jpg"],
+    proofTitles: ["Alliance Software Inc. Certificate of Completion"],
+  },
+  {
+    role: "House Representative",
+    company: "USJ-R Supreme Student Council",
+    period: "May 2023 – May 2024",
+    bullets: [
+      "Served as one of our school's department representatives in conducting school-related activities.",
+      "Advocated for better programs and initiative for our department.",
+      "Developed leadership qualities and skills to better lead the people I represent.",
+    ],
+    proof: ["/experience/ssc.jpg"],
+    proofTitles: ["USJ-R Supreme Student Council Certificate of Proclamation"]
   },
 ];
 
