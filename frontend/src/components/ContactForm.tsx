@@ -2,13 +2,12 @@ import {
   Briefcase,
   Clock,
   MapPin,
-  Mail,
-  Github,
-  Linkedin,
-  CalendarDays,
   ArrowUpRight,
   MessageSquare,
 } from "lucide-react";
+import { useState, useEffect } from "react";
+import { GitHubDark, GitHubLight, LinkedIn, Gmail } from "developer-icons";
+
 
 import { profile } from "@/data/resume";
 import { Card } from "@/components/ui/card";
@@ -18,7 +17,7 @@ import SectionKicker from "@/components/SectionKicker";
 const CALENDLY_URL = import.meta.env.VITE_CALENDLY_URL as string | undefined;
 
 interface ContactCardProps {
-  icon: React.ElementType;
+  icon: React.ElementType | string;
   title: string;
   description: string;
   value?: string;
@@ -27,7 +26,7 @@ interface ContactCardProps {
 }
 
 const ContactCard = ({
-  icon: Icon,
+  icon,
   title,
   description,
   value,
@@ -86,7 +85,20 @@ const ContactCard = ({
           group-hover:bg-accent/5
         "
       >
-        <Icon className="h-4 w-4" />
+        {typeof icon === "string" ? (
+          <img
+            src={icon}
+            alt={title}
+            width={16}
+            height={16}
+            className="h-4 w-4 object-contain"
+          />
+        ) : (
+          (() => {
+            const Icon = icon;
+            return <Icon className="h-4 w-4" />;
+          })()
+        )}
       </div>
 
       {/* Text */}
@@ -234,11 +246,24 @@ const AvailabilityCard = () => {
 };
 
 export default function ContactForm() {
-  /*
-   * Gmail compose URL.
-   *
-   * Replace the email automatically using profile.email from resume.ts.
-   */
+  const [light, setLight] = useState(false);
+
+useEffect(() => {
+  const updateTheme = () => {
+    setLight(document.documentElement.classList.contains("light"));
+  };
+
+  updateTheme();
+
+  const observer = new MutationObserver(updateTheme);
+
+  observer.observe(document.documentElement, {
+    attributes: true,
+    attributeFilter: ["class"],
+  });
+
+  return () => observer.disconnect();
+}, []);
   const gmailUrl = `https://mail.google.com/mail/?view=cm&fs=1&to=${encodeURIComponent(
     profile.email
   )}`;
@@ -576,7 +601,7 @@ export default function ContactForm() {
                   EMAIL — GMAIL
               ================================================== */}
               <ContactCard
-                icon={Mail}
+                icon={Gmail}
                 title="Email"
                 description="Send me an email through Gmail"
                 value={profile.email}
@@ -588,7 +613,7 @@ export default function ContactForm() {
               ================================================== */}
               {profile.linkedin && (
                 <ContactCard
-                  icon={Linkedin}
+                  icon={LinkedIn}
                   title="LinkedIn"
                   description="Connect with me professionally"
                   value={profile.linkedin}
@@ -601,7 +626,7 @@ export default function ContactForm() {
               ================================================== */}
               {profile.github && (
                 <ContactCard
-                  icon={Github}
+                  icon={light ? GitHubDark : GitHubLight}
                   title="GitHub"
                   description="Explore my projects and code"
                   value={profile.github}
@@ -614,7 +639,7 @@ export default function ContactForm() {
               ================================================== */}
               {calendlyUrl && (
                 <ContactCard
-                  icon={CalendarDays}
+                  icon="/icons/Calendly.svg"
                   title="Schedule a call"
                   description="Book a time that works for you"
                   href={calendlyUrl}
