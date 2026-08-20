@@ -76,7 +76,7 @@ Current Model:
 Architecture:
 - FastAPI backend
 - React + Vite frontend
-- Supabase Vector Search
+- ChromaDB
 - Retrieval-Augmented Generation (RAG)
  
 Supported AI Providers:
