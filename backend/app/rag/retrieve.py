@@ -1,24 +1,31 @@
-from app.db import get_client
+from app.db import get_collection
 from app.rag.embed import embed_text
 from app.config import settings
 
 
 def retrieve_chunks(question: str) -> list[dict]:
-    """Embed the question and run cosine-similarity search via the
-    match_documents() Postgres function (see supabase/schema.sql), then
-    drop the result entirely if even the best match isn't actually
-    relevant - this is what lets the caller skip the LLM call rather than
-    generating an answer that isn't grounded in real context."""
+    """Embed the question and run a cosine-similarity search against the
+    local Chroma collection, then drop the result entirely if even the
+    best match isn't actually relevant - this is what lets the caller
+    skip the LLM call rather than generating an answer that isn't
+    grounded in real context."""
+    collection = get_collection()
     query_embedding = embed_text(question)
-    client = get_client()
-    result = client.rpc(
-        "match_documents",
-        {
-            "query_embedding": query_embedding,
-            "match_count": settings.match_count,
-        },
-    ).execute()
-    chunks = result.data or []
+
+    result = collection.query(
+        query_embeddings=[query_embedding],
+        n_results=settings.match_count,
+    )
+
+    documents = result.get("documents") or [[]]
+    distances = result.get("distances") or [[]]
+
+    # Chroma returns cosine *distance* (0 = identical); convert to the same
+    # 0-1 similarity scale the rest of the app expects.
+    chunks = [
+        {"content": doc, "similarity": 1 - dist}
+        for doc, dist in zip(documents[0], distances[0])
+    ]
     return _filter_low_confidence(chunks)
 
 

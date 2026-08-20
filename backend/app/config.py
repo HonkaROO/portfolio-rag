@@ -5,9 +5,6 @@ class Settings(BaseSettings):
         extra="ignore",
     )
 
-    supabase_url: str
-    supabase_key: str
-
     llm_model: str = "llama-3.1-8b-instant"
 
     groq_api_key: str = ""
@@ -18,6 +15,11 @@ class Settings(BaseSettings):
 
     embedding_model: str = "all-MiniLM-L6-v2"
     match_count: int = 4
+
+    # Where the local Chroma collection persists on disk. Relative to
+    # wherever the process is started from (backend/ if you're running
+    # `python -m app.ingest` or `uvicorn app.main:app` from there).
+    chroma_persist_dir: str = "./chroma_data"
 
     min_similarity: float = 0.35
 
