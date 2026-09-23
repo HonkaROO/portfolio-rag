@@ -17,7 +17,7 @@ export default function Projects() {
     >
       <div className="container py-20">
         <SectionKicker
-          index="03"
+          index="05"
           question="What has Christian built"
         />
 

@@ -352,7 +352,7 @@ useEffect(() => {
       >
         {/* Section heading */}
         <SectionKicker
-          index="06"
+          index="07"
           question="How to reach me"
         />
 

@@ -3,6 +3,7 @@ import { Grid2X2, ChevronRight, X } from "lucide-react";
 
 import { coreTech } from "@/data/resume";
 import TechnologyIcon from "@/components/TechnologyIcon";
+import SectionKicker from "@/components/SectionKicker";
 
 type Technology = {
   name: string;
@@ -80,9 +81,13 @@ export default function Technologies() {
         {/* Header */}
         <div className="flex items-end justify-between mb-8">
           <div>
-            <p className="text-xs font-mono text-accent mb-2">
+            <SectionKicker
+              index="02"
+              question="Tech Stack"
+            />
+            {/* <p className="text-xs font-mono text-accent mb-2">
               TECH STACK
-            </p>
+            </p> */}
 
             <h2 className="font-display text-2xl md:text-3xl font-bold">
               Technologies

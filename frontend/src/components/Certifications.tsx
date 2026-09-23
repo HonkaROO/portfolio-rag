@@ -141,7 +141,7 @@ export default function Certifications() {
 
         {/* Section heading */}
         <SectionKicker
-          index="03"
+          index="04"
           question="Credentials that back it up"
         />
 
