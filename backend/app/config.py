@@ -18,7 +18,7 @@ class Settings(BaseSettings):
 
     # Where the local Chroma collection persists on disk. Relative to
     # wherever the process is started from (backend/ if you're running
-    # `python -m app.ingest` or `uvicorn app.main:app` from there).
+    # `python -m app.ingest` or `uvicorn app.main:app` from there).s
     chroma_persist_dir: str = "./chroma_data"
 
     min_similarity: float = 0.35
